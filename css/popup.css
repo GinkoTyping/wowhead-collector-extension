@@ -1,0 +1,20 @@
+body {
+  --p-text-color: #BBBBBB;
+  --s-text-color: rgb(25, 125, 222);
+  --p-bg-color: rgb(24,24,24);
+  border-radius: 6px;
+  width: 200px;
+  text-align: center;
+  background: var(--p-bg-color);
+  color: var(--p-text-color);
+}
+
+button {
+  background-color: var(--p-bg-color);
+  border:1px solid rgb(48, 48, 48);
+  border-radius: 4px;
+  line-height: 26px;
+  color: var(--s-text-color);
+  padding: 0 10px;
+  font-weight: 600;
+}
