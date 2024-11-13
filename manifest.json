@@ -28,8 +28,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "assets/html2canvas.min.js",
-        "assets/jspdf.umd.min.js"
+        "assets/FileSaver.min.js"
       ],
       "matches": [
         "<all_urls>"

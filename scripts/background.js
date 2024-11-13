@@ -10,24 +10,49 @@ const URLS = {
   warlock: ["affliction", "demonology", "destruction"],
 };
 const URLS_ENTRIES = Object.entries(URLS);
-
 const collectedURLs = [];
+const collectedData = {};
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.action === "jump") {
-    const { currentTab } = request;
-    const currentURL = currentTab.url
-      .replace("https://www.wowhead.com/guide/classes/", "")
-      .replace(/([^/]+)$/, "")
-      .split("/");
-    currentURL.pop();
-    collectedURLs.push(currentURL[1]);
-    const nextURL = getNextURL();
-    sendResponse("Jumping...");
-    console.log({ nextURL });
-    chrome.tabs.create({ url: nextURL });
+    handleJump(request, _sender, sendResponse);
+  } else if (request.action === "export") {
+    handlExport(request, _sender, sendResponse);
   }
 });
+
+function getSpecInfo(url) {
+  const output = url
+    .replace("https://www.wowhead.com/guide/classes/", "")
+    .replace(/([^/]+)$/, "")
+    .split("/");
+  if (output) {
+    output.pop();
+    return output;
+  }
+  return "";
+}
+
+function saveSpecData(classes, spec, data) {
+  if (collectedData[classes]) {
+    collectedData[classes][spec] = data;
+  } else {
+    collectedData[classes] = { [spec]: data };
+  }
+}
+
+//#region Jump
+function handleJump(request, _sender, sendResponse) {
+  const { currentTab, data } = request;
+
+  const specInfo = getSpecInfo(currentTab.url);
+  saveSpecData(specInfo[0], specInfo[1], data);
+
+  collectedURLs.push(specInfo[1]);
+  const nextURL = getNextURL();
+  sendResponse("Jumping...");
+  chrome.tabs.create({ url: nextURL });
+}
 
 function getNextURL() {
   let nextURL;
@@ -41,4 +66,9 @@ function getNextURL() {
   });
 
   return nextURL;
+}
+//#region
+
+function handlExport(request, _sender, sendResponse) {
+  return sendResponse(collectedData);
 }
