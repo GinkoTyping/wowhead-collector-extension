@@ -21,6 +21,9 @@ exportDataBtn.onclick = function () {
     const jsonData = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonData], { type: "application/json" });
 
+    // TODO: Maybe using local server to write files.
     saveAs(blob, "spec-data.json");
   });
 };
+
+// TODO: UI displays exported specs;users may choose a spec to export;
