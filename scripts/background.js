@@ -15,6 +15,7 @@ const URLS = {
 };
 const URLS_ENTRIES = Object.entries(URLS);
 
+// [death-knight_frost, mage_frost]
 const collectedURLs = [];
 const collectedData = Object.entries(URLS).reduce((pre, [key,value]) => {
   pre[key] = [];
@@ -57,6 +58,10 @@ function getSpecInfo(url) {
   return "";
 }
 
+function combineClassAndSpec(classKey, specKey) {
+  return `${classKey}_${specKey}`;
+}
+
 function saveSpecData(classes, spec, data) {
   if (collectedData[classes]) {
     collectedData[classes].push({ spec, ...data });
@@ -71,8 +76,9 @@ function handleSave(request, _sender, sendResponse) {
   const specInfo = getSpecInfo(currentTab.url);
   saveSpecData(specInfo[0], specInfo[1], data);
 
-  if (!collectedURLs.includes(specInfo[1])) {
-    collectedURLs.push(specInfo[1]);
+  const combineKey = combineClassAndSpec(specInfo[0], specInfo[1]);
+  if (!collectedURLs.includes(combineKey)) {
+    collectedURLs.push(combineKey);
   }
 
   return sendResponse("Save succeeded.");
@@ -88,7 +94,7 @@ function handleJump(request, _sender, sendResponse) {
 function getNextURL() {
   let nextURL;
   URLS_ENTRIES.find(([key, value]) => {
-    const nextSpec = value.find((spec) => !collectedURLs.includes(spec));
+    const nextSpec = value.find((spec) => !collectedURLs.includes(combineClassAndSpec(key, spec)));
     if (nextSpec) {
       nextURL = `https://www.wowhead.com/guide/classes/${key}/${nextSpec}/bis-gear`;
       return true;

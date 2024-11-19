@@ -72,7 +72,7 @@ function insertSpectDom(total, collected) {
     total[classKey].forEach((specKey) => {
       const span = document.createElement("span");
       span.innerText = specKey;
-      if (collected.includes(specKey)) {
+      if (collected.includes(`${classKey}_${specKey}`)) {
         span.classList.add("collected");
       }
       specContainer.appendChild(span);
@@ -98,7 +98,7 @@ function checkHasCollect() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTab = tabs[0];
     const [classKey, specKey] = getSpecInfo(currentTab.url);
-    hasCollectedCurrentSpec = collectionInfo.collected.includes(specKey);
+    hasCollectedCurrentSpec = collectionInfo.collected.includes(`${classKey}_${specKey}`);
     collectDataBtn.innerText = hasCollectedCurrentSpec
       ? COLLECTED_TEXT
       : NOT_COLLECTED_TEXT;
