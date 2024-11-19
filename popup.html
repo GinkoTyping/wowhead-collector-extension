@@ -1,11 +1,36 @@
 <html>
-  <link rel="stylesheet" href="css/popup.css">
-  <body>
-    <h2>Raider.io Collector</h2>
+<link rel="stylesheet" href="css/popup.css">
+
+<body>
+  <h2>Raider.io Collector</h2>
+  <div class="content">
+    <div class="checkbox-container">
+      <span>Auto Jump</span>
+      <input id="auto-jump" type="checkbox" name="auto-jump">
+    </div>
     <button id="collect">Collect BIS Data</button>
     <button id="export">Export BIS Data</button>
-  </body>
+  </div>
+</body>
 
-  <script src="assets/FileSaver.min.js"></script>
-  <script src="scripts/popup.js"></script>
+<script src="assets/FileSaver.min.js"></script>
+<script src="scripts/popup.js"></script>
+
 </html>
+
+<style>
+  .content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 0 20px;
+  }
+  button {
+    margin-bottom: 8px;
+  }
+  .checkbox-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+</style>

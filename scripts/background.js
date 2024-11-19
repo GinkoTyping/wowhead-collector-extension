@@ -1,3 +1,7 @@
+let config = {
+  autoJump: true,
+};
+
 const URLS = {
   "death-knight": ["blood", "frost", "unholy"],
   "demon-hunter": ["havoc", "vengeance"],
@@ -10,6 +14,7 @@ const URLS = {
   warlock: ["affliction", "demonology", "destruction"],
 };
 const URLS_ENTRIES = Object.entries(URLS);
+
 const collectedURLs = [];
 const collectedData = {};
 
@@ -18,6 +23,12 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     handleJump(request, _sender, sendResponse);
   } else if (request.action === "export") {
     handlExport(request, _sender, sendResponse);
+  } else if (request.action === "querySpecs") {
+    handleQuerySpecs();
+  } else if (request.action === "queryConfig") {
+    handleQueryConfig(request, _sender, sendResponse);
+  } else if (request.action === "updateConfig") {
+    handleUpdateConfig(request, _sender, sendResponse);
   }
 });
 
@@ -71,4 +82,16 @@ function getNextURL() {
 
 function handlExport(request, _sender, sendResponse) {
   return sendResponse(collectedData);
+}
+
+function handleQuerySpecs() {}
+
+function handleQueryConfig(request, _sender, sendResponse) {
+  return sendResponse(config);
+}
+
+function handleUpdateConfig(request, _sender, sendResponse) {
+  config = { ...config, ...request.value };
+
+  return sendResponse(`Update success: ${JSON.stringify(config)}`);
 }
