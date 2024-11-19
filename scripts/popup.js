@@ -1,9 +1,6 @@
 let config = {};
 
 const collectDataBtn = document.querySelector("#collect");
-const exportDataBtn = document.querySelector("#export");
-const autoJumpCheckbox = document.querySelector("#auto-jump");
-
 collectDataBtn.onclick = function () {
   const message = { action: "BIS" };
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -15,10 +12,11 @@ collectDataBtn.onclick = function () {
         { action: "save", currentTab, data: response },
         (res) => {
           console.log(res);
+          updateSpecView();
         }
       );
 
-      if (config.autoJump) {
+      if (config.autoJump || hasCollectedCurrentSpec) {
         chrome.runtime.sendMessage(
           { action: "jump", currentTab, data: response },
           (res) => {
@@ -30,6 +28,7 @@ collectDataBtn.onclick = function () {
   });
 };
 
+const exportDataBtn = document.querySelector("#export");
 exportDataBtn.onclick = function () {
   chrome.runtime.sendMessage({ action: "export" }, (data) => {
     const jsonData = JSON.stringify(data, null, 2);
@@ -40,6 +39,7 @@ exportDataBtn.onclick = function () {
   });
 };
 
+const autoJumpCheckbox = document.querySelector("#auto-jump");
 autoJumpCheckbox.onclick = function () {
   config.autoJump = autoJumpCheckbox.checked;
   chrome.runtime.sendMessage(
@@ -50,15 +50,21 @@ autoJumpCheckbox.onclick = function () {
   );
 };
 
+//#region Show realtime collected specs status;
 let specsContainer;
+let collectionInfo;
+let hasCollectedCurrentSpec;
+const COLLECTED_TEXT = "Collected. Next";
+const NOT_COLLECTED_TEXT = "Collecte BIS Data";
 function insertSpectDom(total, collected) {
   specsContainer = specsContainer ?? document.querySelector(".specs");
+  specsContainer.innerHTML = "";
   const classNames = Object.keys(total);
   classNames.forEach((classKey) => {
     const container = document.createElement("div");
     container.classList.add(classKey);
     container.classList.add("class-specs");
-  
+
     const classTitle = document.createElement("p");
     classTitle.innerText = classKey;
 
@@ -77,16 +83,49 @@ function insertSpectDom(total, collected) {
     specsContainer.appendChild(container);
   });
 }
-chrome.runtime.sendMessage({ action: "querySpecs" }, (specs) => {
-  const { total, collected } = specs;
-  console.log("Received from background:", { total, collected });
-  insertSpectDom(total, collected);
-});
+function getSpecInfo(url) {
+  const output = url
+    .replace("https://www.wowhead.com/guide/classes/", "")
+    .replace(/([^/]+)$/, "")
+    .split("/");
+  if (output) {
+    output.pop();
+    return output;
+  }
+  return "";
+}
+function checkHasCollect() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const currentTab = tabs[0];
+    const [classKey, specKey] = getSpecInfo(currentTab.url);
+    hasCollectedCurrentSpec = collectionInfo.collected.includes(specKey);
+    collectDataBtn.innerText = hasCollectedCurrentSpec
+      ? COLLECTED_TEXT
+      : NOT_COLLECTED_TEXT;
+    collectDataBtn.classList[hasCollectedCurrentSpec ? "add" : "remove"]("off");
+  });
+}
+function updateSpecView() {
+  chrome.runtime.sendMessage({ action: "querySpecs" }, (specs) => {
+    collectionInfo = specs;
+    const { total, collected } = specs;
+    console.log("Received from background:", { total, collected });
+    insertSpectDom(total, collected);
+    checkHasCollect();
+  });
+}
+//#endregion
 
-chrome.runtime.sendMessage({ action: "queryConfig" }, updateUIByConfig);
-
+//#region Set gloable setting from service_worker
+function updateConfig() {
+  chrome.runtime.sendMessage({ action: "queryConfig" }, updateUIByConfig);
+}
 function updateUIByConfig(response) {
   config = response;
 
   autoJumpCheckbox.checked = config.autoJump;
 }
+//#endregion
+
+updateSpecView();
+updateConfig();
