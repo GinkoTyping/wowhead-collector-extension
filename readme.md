@@ -1,0 +1,1 @@
+![](https://github.com/GinkoTyping/wowhead-collector-extension/blob/main/docs/images/default.png)
