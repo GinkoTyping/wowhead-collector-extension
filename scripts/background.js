@@ -16,19 +16,32 @@ const URLS = {
 const URLS_ENTRIES = Object.entries(URLS);
 
 const collectedURLs = [];
-const collectedData = {};
+const collectedData = Object.entries(URLS).reduce((pre, [key,value]) => {
+  pre[key] = [];
+  return pre;
+}, {});
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-  if (request.action === "jump") {
-    handleJump(request, _sender, sendResponse);
-  } else if (request.action === "export") {
-    handlExport(request, _sender, sendResponse);
-  } else if (request.action === "querySpecs") {
-    handleQuerySpecs();
-  } else if (request.action === "queryConfig") {
-    handleQueryConfig(request, _sender, sendResponse);
-  } else if (request.action === "updateConfig") {
-    handleUpdateConfig(request, _sender, sendResponse);
+  switch (request.action) {
+    case "save":
+      handleSave(request, _sender, sendResponse);
+      break;
+    case "jump":
+      handleJump(request, _sender, sendResponse);
+      break;
+    case "export":
+      handlExport(request, _sender, sendResponse);
+      break;
+    case "querySpecs":
+      handleQuerySpecs(request, _sender, sendResponse);
+      break;
+    case "queryConfig":
+      handleQueryConfig(request, _sender, sendResponse);
+    case "updateConfig":
+      handleUpdateConfig(request, _sender, sendResponse);
+      break;
+    default:
+      break;
   }
 });
 
@@ -46,20 +59,27 @@ function getSpecInfo(url) {
 
 function saveSpecData(classes, spec, data) {
   if (collectedData[classes]) {
-    collectedData[classes][spec] = data;
+    collectedData[classes].push({ spec, ...data });
   } else {
-    collectedData[classes] = { [spec]: data };
+    collectedData[classes] = [{ spec, ...data }];
   }
 }
 
-//#region Jump
-function handleJump(request, _sender, sendResponse) {
+function handleSave(request, _sender, sendResponse) {
   const { currentTab, data } = request;
 
   const specInfo = getSpecInfo(currentTab.url);
   saveSpecData(specInfo[0], specInfo[1], data);
 
-  collectedURLs.push(specInfo[1]);
+  if (!collectedURLs.includes(specInfo[1])) {
+    collectedURLs.push(specInfo[1]);
+  }
+
+  return sendResponse("Save succeeded.");
+}
+
+//#region Jump
+function handleJump(request, _sender, sendResponse) {
   const nextURL = getNextURL();
   sendResponse("Jumping...");
   chrome.tabs.create({ url: nextURL });
@@ -84,7 +104,9 @@ function handlExport(request, _sender, sendResponse) {
   return sendResponse(collectedData);
 }
 
-function handleQuerySpecs() {}
+function handleQuerySpecs(request, _sender, sendResponse) {
+  return sendResponse({ total: URLS, collected: collectedURLs });
+}
 
 function handleQueryConfig(request, _sender, sendResponse) {
   return sendResponse(config);

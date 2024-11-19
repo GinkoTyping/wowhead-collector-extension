@@ -9,12 +9,23 @@ collectDataBtn.onclick = function () {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTab = tabs[0];
     chrome.tabs.sendMessage(currentTab.id, message, (response) => {
+      console.log(`BIS data:`, response);
+
       chrome.runtime.sendMessage(
-        { action: "jump", currentTab, data: response },
+        { action: "save", currentTab, data: response },
         (res) => {
           console.log(res);
         }
       );
+
+      if (config.autoJump) {
+        chrome.runtime.sendMessage(
+          { action: "jump", currentTab, data: response },
+          (res) => {
+            console.log(res);
+          }
+        );
+      }
     });
   });
 };
@@ -30,6 +41,7 @@ exportDataBtn.onclick = function () {
 };
 
 autoJumpCheckbox.onclick = function () {
+  config.autoJump = autoJumpCheckbox.checked;
   chrome.runtime.sendMessage(
     { action: "updateConfig", value: { autoJump: autoJumpCheckbox.checked } },
     (res) => {
@@ -38,11 +50,38 @@ autoJumpCheckbox.onclick = function () {
   );
 };
 
-// TODO: UI displays exported specs;users may choose a spec to export;
+let specsContainer;
+function insertSpectDom(total, collected) {
+  specsContainer = specsContainer ?? document.querySelector(".specs");
+  const classNames = Object.keys(total);
+  classNames.forEach((classKey) => {
+    const container = document.createElement("div");
+    container.classList.add(classKey);
+    container.classList.add("class-specs");
+  
+    const classTitle = document.createElement("p");
+    classTitle.innerText = classKey;
 
-// chrome.runtime.sendMessage({ action: "querySpec" }, (response) => {
-//   console.log("Received from background:", response);
-// });
+    const specContainer = document.createElement("div");
+    total[classKey].forEach((specKey) => {
+      const span = document.createElement("span");
+      span.innerText = specKey;
+      if (collected.includes(specKey)) {
+        span.classList.add("collected");
+      }
+      specContainer.appendChild(span);
+    });
+
+    container.appendChild(classTitle);
+    container.appendChild(specContainer);
+    specsContainer.appendChild(container);
+  });
+}
+chrome.runtime.sendMessage({ action: "querySpecs" }, (specs) => {
+  const { total, collected } = specs;
+  console.log("Received from background:", { total, collected });
+  insertSpectDom(total, collected);
+});
 
 chrome.runtime.sendMessage({ action: "queryConfig" }, updateUIByConfig);
 

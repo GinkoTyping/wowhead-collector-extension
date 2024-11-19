@@ -1,0 +1,41 @@
+body  {
+  --death-knight: #c41e3a;
+  --shaman: #0070dd;
+  --mage: #3fc7eb;
+  --warlock: #8788ee;
+  --monk: #00ff98;
+  --druid: #ff7c0a;
+  --demon-hunter: #a330c9;
+  --palading: #f48cba;
+  --rogue: #fff468;
+}
+
+.death-knight {
+  color: var(--death-knight);
+}
+
+.shaman {
+  color: var(--shaman);
+}
+
+.mage {
+  color: var(--mage);
+}
+.warlock {
+  color: var(--warlock);
+}
+.monk {
+  color: var(--monk);
+}
+.druid {
+  color: var(--druid);
+}
+.demon-hunter {
+  color: var(--demon-hunter);
+}
+.palading {
+  color: var(--palading);
+}
+.rogue {
+  color: var(--rogue);
+}

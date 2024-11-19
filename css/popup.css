@@ -1,20 +1,70 @@
 body {
   --p-text-color: #BBBBBB;
   --s-text-color: rgb(25, 125, 222);
-  --p-bg-color: rgb(24,24,24);
+  --theme-text-color: rgb(255, 209, 0);
+  --p-bg-color: rgb(24, 24, 24);
   border-radius: 6px;
-  width: 200px;
+  width: 250px;
   text-align: center;
   background: var(--p-bg-color);
   color: var(--p-text-color);
 }
 
+h2 {
+  color: var(--theme-text-color);
+  margin: 8px 0;
+}
+
 button {
   background-color: var(--p-bg-color);
-  border:1px solid rgb(48, 48, 48);
+  border: 1px solid rgb(48, 48, 48);
   border-radius: 4px;
   line-height: 26px;
-  color: var(--s-text-color);
+  color: var(--theme-text-color);
   padding: 0 10px;
   font-weight: 600;
+}
+.specs {
+  margin-bottom: 8px;
+}
+.spec-container {
+  display: flex;
+  justify-content: flex-start;
+}
+.class-specs p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+.class-specs span {
+  cursor: pointer;
+  margin-right: 10px;
+}
+.class-specs span:not(.collected):hover {
+  color: var(--s-text-color);
+}
+.class-specs span.collected {
+  text-decoration: line-through;
+  color: #bbbbbb61;
+  cursor: not-allowed;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0 20px;
+}
+
+#collect,
+#export {
+  margin-bottom: 8px;
+}
+
+.checkbox-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--theme-text-color);
 }
