@@ -2,31 +2,23 @@ let config = {};
 
 const collectDataBtn = document.querySelector("#collect");
 collectDataBtn.onclick = function () {
-  const message = { action: "BIS" };
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTab = tabs[0];
     const isValidURL = checkValidURL(currentTab.url);
     if (isValidURL) {
-      chrome.tabs.sendMessage(currentTab.id, message, (response) => {
-        console.log(`BIS data:`, response);
-
-        chrome.runtime.sendMessage(
-          { action: "save", currentTab, data: response },
-          (res) => {
-            console.log(res);
+      if (hasCollectedCurrentSpec) {
+        chrome.runtime.sendMessage({ action: "jump", currentTab }, (res) => {
+          console.log(res);
+        });
+      } else {
+        chrome.tabs.sendMessage(
+          currentTab.id,
+          { action: "BIS" },
+          (response) => {
             updateSpecView();
           }
         );
-
-        if (config.autoJump || hasCollectedCurrentSpec) {
-          chrome.runtime.sendMessage(
-            { action: "jump", currentTab, data: response },
-            (res) => {
-              console.log(res);
-            }
-          );
-        }
-      });
+      }
     } else {
       if (confirm("Not in the BIS page, comfirm to redirect to BIS page.")) {
         const [classKey, specKey] = getSpecInfo(currentTab.url);

@@ -1,5 +1,6 @@
 let config = {
-  autoJump: true,
+  autoJump: false,
+  jumpInterval: 3000,
   displayMode: "checkbox",
 };
 
@@ -16,7 +17,7 @@ const URLS = {
   warrior: ["arms", "fury", "protection"],
   evoker: ["devastation", "preservation", "augmentation"],
   hunter: ["beast-mastery", "marksmanship", "survial"],
-  priest: ["discipline", "holy", "shadow"]
+  priest: ["discipline", "holy", "shadow"],
 };
 const URLS_ENTRIES = Object.entries(URLS);
 
@@ -91,9 +92,20 @@ function handleSave(request, _sender, sendResponse) {
 
 //#region Jump
 function handleJump(request, _sender, sendResponse) {
+  const { currentTab } = _sender;
   const nextURL = getNextURL();
   sendResponse("Jumping...");
   chrome.tabs.create({ url: nextURL });
+
+  // TODO lag when closing the last tab, possibly related to the count down before creating a new tab
+  chrome.tabs.query({ currentWindow: true }, (tabs) => {
+    const lastTab = tabs.find((tab) =>
+      [tab.url, tab.pendingUrl].includes(currentTab)
+    );
+    if (lastTab) {
+      chrome.tabs.remove(lastTab.id);
+    }
+  });
 }
 
 function getNextURL() {

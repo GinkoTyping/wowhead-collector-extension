@@ -17,16 +17,36 @@ document.querySelector("#page-content").style.paddingRight = 0;
 // Collect data
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action == "BIS") {
-    sendResponse({
-      statsPriority: getStatPriority(),
-      overall: getBisItem("#overall-bis"),
-      bisItemRaid: getBisItem("#tab-bis-items-raid"),
-      bisItemMythic: getBisItem("#tab-bis-items-mythic"),
-      trinkets: getTrinketsRank(),
-    });
+    const data = getData();
+    chrome.runtime.sendMessage(
+      {
+        action: "save",
+        currentTab: { url: window.location.href },
+        data,
+      },
+      (res) => {
+        console.log(res);
+        sendResponse(data);
+
+        chrome.runtime.sendMessage({ action: "queryConfig" }, (config) => {
+          if (config.autoJump) {
+            jumpCountDown(config.jumpInterval);
+          }
+        });
+      }
+    );
   }
-  sendResponse({});
 });
+
+function getData() {
+  return {
+    statsPriority: getStatPriority(),
+    overall: getBisItem("#overall-bis"),
+    bisItemRaid: getBisItem("#tab-bis-items-raid"),
+    bisItemMythic: getBisItem("#tab-bis-items-mythic"),
+    trinkets: getTrinketsRank(),
+  };
+}
 
 function getBisItem(containerId) {
   let itemDoms;
@@ -76,3 +96,33 @@ function getTrinketsRank() {
   }
   return [];
 }
+
+function checkAutoCollect() {
+  chrome.runtime.sendMessage({ action: "queryConfig" }, (config) => {
+    if (config.autoJump) {
+      const currentTab = { url: window.location.href };
+      chrome.runtime.sendMessage(
+        { action: "save", currentTab, data: getData() },
+        (res) => {
+          jumpCountDown(config.jumpInterval);
+        }
+      );
+    }
+  });
+}
+
+function jumpCountDown(time) {
+  setTimeout(() => {
+    chrome.runtime.sendMessage(
+      {
+        action: "jump",
+        currentTab: { url: window.location.href },
+      },
+      (res) => {
+        console.log(res);
+      }
+    );
+  }, time);
+}
+
+checkAutoCollect();
