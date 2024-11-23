@@ -92,12 +92,11 @@ function handleSave(request, _sender, sendResponse) {
 
 //#region Jump
 function handleJump(request, _sender, sendResponse) {
-  const { currentTab } = _sender;
+  const { currentTab } = request;
   const nextURL = getNextURL();
   sendResponse("Jumping...");
   chrome.tabs.create({ url: nextURL });
 
-  // TODO lag when closing the last tab, possibly related to the count down before creating a new tab
   chrome.tabs.query({ currentWindow: true }, (tabs) => {
     const lastTab = tabs.find((tab) =>
       [tab.url, tab.pendingUrl].includes(currentTab)

@@ -1,3 +1,7 @@
+.hide {
+  display: none;
+}
+
 .count-down-container {
   padding: 8px;
   position: absolute;
@@ -11,13 +15,17 @@
   align-items: center;
   width: 260px;
   color: rgb(255, 209, 0);
+  z-index: 9999;
 }
+
 .count-down-container h4 {
   margin: 8px 0;
 }
+
 .count-down-container p {
   text-align: center;
 }
+
 .count-down-container .progress-container {
   width: 100%;
   height: 32px;
@@ -31,6 +39,7 @@
   padding-right: 4px;
   color: #000000;
 }
+
 .count-down-container .progress-container div {
   width: 50%;
   height: 100%;

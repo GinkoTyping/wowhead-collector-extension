@@ -119,7 +119,7 @@ function checkAutoCollect() {
 
 let restTime;
 let intervalTimer;
-const UPDATE_PER_TIME = 500;
+const UPDATE_PER_TIME = 100;
 function jumpCountDown(time) {
   restTime = time;
   setTimeout(() => {
@@ -130,13 +130,20 @@ function jumpCountDown(time) {
       },
       (res) => {
         console.log(res);
+        intervalTimer = null;
+        if (countDownBox) {
+          countDownBox.classList.add("hide");
+        }
       }
     );
-
-    intervalTimer = null;
   }, time);
   intervalTimer = setInterval(() => {
-    updateCountDownBox({ leftTime: restTime-- });
+    
+    updateCountDownBox({
+      leftTime: restTime-= UPDATE_PER_TIME,
+      total: totalSpecCount,
+      current: collectedSpecCount,
+    });
   }, UPDATE_PER_TIME);
 }
 
@@ -144,7 +151,9 @@ let countDownBox;
 let msgElement;
 let totalTextElement;
 let currentProgressElement;
-let collectionInfo;
+
+let totalSpecCount;
+let collectedSpecCount;
 function updateCountDownBox(params) {
   const { leftTime, total, current } = params;
 
@@ -168,21 +177,25 @@ function updateCountDownBox(params) {
 
     document.body.append(countDownBox);
   }
-
+  countDownBox.classList.remove("hide");
   msgElement.innerText = `Collecting succeeded. Going to the next spec in ${(
     leftTime / 1000
   ).toFixed(1)} seconds.`;
   totalTextElement.innerText = total;
   currentProgressElement.innerText = current;
+  currentProgressElement.style.width = `${(current / total * 100).toFixed(2)}%`
 }
 
 function updateSpec() {
   chrome.runtime.sendMessage({ action: "querySpecs" }, (specs) => {
     collectionInfo = specs;
     const { total, collected } = specs;
+    totalSpecCount = Object.values(total).reduce((pre, cur) => {
+      pre += cur.length;
+      return pre;
+    }, 0);
+    collectedSpecCount = collected.length;
     console.log("Received from background:", { total, collected });
   });
 }
 //#endregion
-
-updateCountDownBox({ leftTime: 2520, total: 30, current: 15 });
