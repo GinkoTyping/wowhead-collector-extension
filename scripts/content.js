@@ -16,7 +16,6 @@ document.querySelector("#page-content").style.paddingRight = 0;
 
 // Collect data
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  // TODO check url before collecting
   if (request.action == "BIS") {
     sendResponse({
       statsPriority: getStatPriority(),

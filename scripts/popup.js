@@ -5,28 +5,42 @@ collectDataBtn.onclick = function () {
   const message = { action: "BIS" };
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTab = tabs[0];
-    chrome.tabs.sendMessage(currentTab.id, message, (response) => {
-      console.log(`BIS data:`, response);
+    const isValidURL = checkValidURL(currentTab.url);
+    if (isValidURL) {
+      chrome.tabs.sendMessage(currentTab.id, message, (response) => {
+        console.log(`BIS data:`, response);
 
-      chrome.runtime.sendMessage(
-        { action: "save", currentTab, data: response },
-        (res) => {
-          console.log(res);
-          updateSpecView();
-        }
-      );
-
-      if (config.autoJump || hasCollectedCurrentSpec) {
         chrome.runtime.sendMessage(
-          { action: "jump", currentTab, data: response },
+          { action: "save", currentTab, data: response },
           (res) => {
             console.log(res);
+            updateSpecView();
           }
         );
+
+        if (config.autoJump || hasCollectedCurrentSpec) {
+          chrome.runtime.sendMessage(
+            { action: "jump", currentTab, data: response },
+            (res) => {
+              console.log(res);
+            }
+          );
+        }
+      });
+    } else {
+      if (confirm("Not in the BIS page, comfirm to redirect to BIS page.")) {
+        const [classKey, specKey] = getSpecInfo(currentTab.url);
+        chrome.tabs.create({
+          url: `https://www.wowhead.com/guide/classes/${classKey}/${specKey}/bis-gear`,
+        });
       }
-    });
+    }
   });
 };
+function checkValidURL(url) {
+  const regex = /^https:\/\/www\.wowhead\.com\/guide\/classes.*\/bis-gear$/;
+  return regex.test(url);
+}
 
 const exportDataBtn = document.querySelector("#export");
 exportDataBtn.onclick = function () {
@@ -64,14 +78,16 @@ displayRadios.addEventListener("click", (e) => {
   }
 });
 function updateUIByDisplayMode() {
-  selectedRadio = displayRadios.querySelector(`input[value=${config.displayMode}]`);
+  selectedRadio = displayRadios.querySelector(
+    `input[value=${config.displayMode}]`
+  );
   selectedRadio.checked = true;
-  if (config.displayMode === 'checkbox') {
-    specsSimpleContainer.classList.remove('hide');
-    specsContainer.classList.add('hide');
+  if (config.displayMode === "checkbox") {
+    specsSimpleContainer.classList.remove("hide");
+    specsContainer.classList.add("hide");
   } else {
-    specsContainer.classList.remove('hide');
-    specsSimpleContainer.classList.add('hide');
+    specsContainer.classList.remove("hide");
+    specsSimpleContainer.classList.add("hide");
   }
 }
 
@@ -84,7 +100,8 @@ const COLLECTED_TEXT = "Collected. Next";
 const NOT_COLLECTED_TEXT = "Collecte BIS Data";
 function insertDom(total, collected) {
   specsContainer = specsContainer ?? document.querySelector(".specs");
-  specsSimpleContainer = specsSimpleContainer ?? document.querySelector(".specs-simple");
+  specsSimpleContainer =
+    specsSimpleContainer ?? document.querySelector(".specs-simple");
   specsContainer.innerHTML = "";
   specsSimpleContainer.innerHTML = "";
   const classNames = Object.keys(total);
@@ -133,7 +150,7 @@ function insertSpecSimple(classKey, specs, collected) {
     checkbox.title = specKey;
 
     if (collected.includes(`${classKey}_${specKey}`)) {
-      checkbox.checked = true
+      checkbox.checked = true;
     }
     specContainer.appendChild(checkbox);
   });
@@ -158,7 +175,9 @@ function checkHasCollect() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentTab = tabs[0];
     const [classKey, specKey] = getSpecInfo(currentTab.url);
-    hasCollectedCurrentSpec = collectionInfo.collected.includes(`${classKey}_${specKey}`);
+    hasCollectedCurrentSpec = collectionInfo.collected.includes(
+      `${classKey}_${specKey}`
+    );
     collectDataBtn.innerText = hasCollectedCurrentSpec
       ? COLLECTED_TEXT
       : NOT_COLLECTED_TEXT;
