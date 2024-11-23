@@ -38,6 +38,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
+updateSpec();
+checkAutoCollect();
+
+//#region collecting data
 function getData() {
   return {
     statsPriority: getStatPriority(),
@@ -96,7 +100,9 @@ function getTrinketsRank() {
   }
   return [];
 }
+//#endregion
 
+//#region auto jump
 function checkAutoCollect() {
   chrome.runtime.sendMessage({ action: "queryConfig" }, (config) => {
     if (config.autoJump) {
@@ -111,7 +117,11 @@ function checkAutoCollect() {
   });
 }
 
+let restTime;
+let intervalTimer;
+const UPDATE_PER_TIME = 500;
 function jumpCountDown(time) {
+  restTime = time;
   setTimeout(() => {
     chrome.runtime.sendMessage(
       {
@@ -122,7 +132,57 @@ function jumpCountDown(time) {
         console.log(res);
       }
     );
+
+    intervalTimer = null;
   }, time);
+  intervalTimer = setInterval(() => {
+    updateCountDownBox({ leftTime: restTime-- });
+  }, UPDATE_PER_TIME);
 }
 
-checkAutoCollect();
+let countDownBox;
+let msgElement;
+let totalTextElement;
+let currentProgressElement;
+let collectionInfo;
+function updateCountDownBox(params) {
+  const { leftTime, total, current } = params;
+
+  if (!countDownBox) {
+    countDownBox = document.createElement("div");
+    countDownBox.classList.add("count-down-container");
+
+    const progressBar = document.createElement("div");
+    progressBar.classList.add("progress-container");
+    currentProgressElement = document.createElement("div");
+    progressBar.appendChild(currentProgressElement);
+    totalTextElement = document.createElement("span");
+    progressBar.appendChild(totalTextElement);
+
+    const title = document.createElement("h4");
+    title.innerText = "Auto Collecting...";
+    countDownBox.appendChild(title);
+    countDownBox.appendChild(progressBar);
+    msgElement = document.createElement("p");
+    countDownBox.appendChild(msgElement);
+
+    document.body.append(countDownBox);
+  }
+
+  msgElement.innerText = `Collecting succeeded. Going to the next spec in ${(
+    leftTime / 1000
+  ).toFixed(1)} seconds.`;
+  totalTextElement.innerText = total;
+  currentProgressElement.innerText = current;
+}
+
+function updateSpec() {
+  chrome.runtime.sendMessage({ action: "querySpecs" }, (specs) => {
+    collectionInfo = specs;
+    const { total, collected } = specs;
+    console.log("Received from background:", { total, collected });
+  });
+}
+//#endregion
+
+updateCountDownBox({ leftTime: 2520, total: 30, current: 15 });

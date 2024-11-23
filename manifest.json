@@ -16,6 +16,7 @@
       "js": [
         "scripts/content.js"
       ],
+      "css": ["css/content.css"],
       "matches": [
         "https://www.wowhead.com/*"
       ]
