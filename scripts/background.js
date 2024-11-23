@@ -1,5 +1,6 @@
 let config = {
   autoJump: true,
+  displayMode: "checkbox",
 };
 
 const URLS = {
@@ -12,12 +13,16 @@ const URLS = {
   rogue: ["assassination", "outlaw", "subtlety"],
   shaman: ["elemental", "enhancement", "restoration"],
   warlock: ["affliction", "demonology", "destruction"],
+  warrior: ["arms", "fury", "protection"],
+  evoker: ["devastation", "preservation", "augmentation"],
+  hunter: ["beast-mastery", "marksmanship", "survial"],
+  priest: ["discipline", "holy", "shadow"]
 };
 const URLS_ENTRIES = Object.entries(URLS);
 
 // [death-knight_frost, mage_frost]
 const collectedURLs = [];
-const collectedData = Object.entries(URLS).reduce((pre, [key,value]) => {
+const collectedData = Object.entries(URLS).reduce((pre, [key, value]) => {
   pre[key] = [];
   return pre;
 }, {});
@@ -94,7 +99,9 @@ function handleJump(request, _sender, sendResponse) {
 function getNextURL() {
   let nextURL;
   URLS_ENTRIES.find(([key, value]) => {
-    const nextSpec = value.find((spec) => !collectedURLs.includes(combineClassAndSpec(key, spec)));
+    const nextSpec = value.find(
+      (spec) => !collectedURLs.includes(combineClassAndSpec(key, spec))
+    );
     if (nextSpec) {
       nextURL = `https://www.wowhead.com/guide/classes/${key}/${nextSpec}/bis-gear`;
       return true;

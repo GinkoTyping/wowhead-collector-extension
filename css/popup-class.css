@@ -8,6 +8,25 @@ body  {
   --demon-hunter: #a330c9;
   --palading: #f48cba;
   --rogue: #fff468;
+  --warrior: rgb(198, 155, 109);
+  --evoker: rgb(51, 147, 127);
+  --hunter: rgb(170, 211, 114);
+  --priest: rgb(255, 255, 255);
+}
+.warrior {
+  color: var(--warrior);
+}
+
+.evoker {
+  color: var(--evoker);
+}
+
+.hunter {
+  color: var(--hunter);
+}
+
+.priest {
+  color: var(--priest);
 }
 
 .death-knight {

@@ -50,39 +50,99 @@ autoJumpCheckbox.onclick = function () {
   );
 };
 
+const displayRadios = document.querySelector(".radios");
+displayRadios.addEventListener("click", (e) => {
+  if (e.target.type === "radio" && config.displayMode !== e.target.value) {
+    config.displayMode = e.target.value;
+    chrome.runtime.sendMessage(
+      { action: "updateConfig", value: { displayMode: config.displayMode } },
+      (res) => {
+        // the size of the popup window changes, need to reload page.
+        window.location.reload();
+      }
+    );
+  }
+});
+function updateUIByDisplayMode() {
+  selectedRadio = displayRadios.querySelector(`input[value=${config.displayMode}]`);
+  selectedRadio.checked = true;
+  if (config.displayMode === 'checkbox') {
+    specsSimpleContainer.classList.remove('hide');
+    specsContainer.classList.add('hide');
+  } else {
+    specsContainer.classList.remove('hide');
+    specsSimpleContainer.classList.add('hide');
+  }
+}
+
 //#region Show realtime collected specs status;
 let specsContainer;
+let specsSimpleContainer;
 let collectionInfo;
 let hasCollectedCurrentSpec;
 const COLLECTED_TEXT = "Collected. Next";
 const NOT_COLLECTED_TEXT = "Collecte BIS Data";
-function insertSpectDom(total, collected) {
+function insertDom(total, collected) {
   specsContainer = specsContainer ?? document.querySelector(".specs");
+  specsSimpleContainer = specsSimpleContainer ?? document.querySelector(".specs-simple");
   specsContainer.innerHTML = "";
+  specsSimpleContainer.innerHTML = "";
   const classNames = Object.keys(total);
   classNames.forEach((classKey) => {
-    const container = document.createElement("div");
-    container.classList.add(classKey);
-    container.classList.add("class-specs");
-
-    const classTitle = document.createElement("p");
-    classTitle.innerText = classKey;
-
-    const specContainer = document.createElement("div");
-    total[classKey].forEach((specKey) => {
-      const span = document.createElement("span");
-      span.innerText = specKey;
-      if (collected.includes(`${classKey}_${specKey}`)) {
-        span.classList.add("collected");
-      }
-      specContainer.appendChild(span);
-    });
-
-    container.appendChild(classTitle);
-    container.appendChild(specContainer);
-    specsContainer.appendChild(container);
+    insertSpecSimple(classKey, total[classKey], collected);
+    insertSpec(classKey, total[classKey], collected);
   });
 }
+
+function insertSpec(classKey, specs, collected) {
+  const container = document.createElement("div");
+  container.classList.add(classKey);
+  container.classList.add("class-specs");
+
+  const classTitle = document.createElement("p");
+  classTitle.innerText = classKey;
+
+  const specContainer = document.createElement("div");
+  specs.forEach((specKey) => {
+    const span = document.createElement("span");
+    span.innerText = specKey;
+    if (collected.includes(`${classKey}_${specKey}`)) {
+      span.classList.add("collected");
+    }
+    specContainer.appendChild(span);
+  });
+
+  container.appendChild(classTitle);
+  container.appendChild(specContainer);
+  specsContainer.appendChild(container);
+}
+
+function insertSpecSimple(classKey, specs, collected) {
+  const container = document.createElement("div");
+  container.classList.add(classKey);
+  container.classList.add("class-specs");
+
+  const classTitle = document.createElement("p");
+  classTitle.innerText = classKey;
+
+  const specContainer = document.createElement("div");
+  specs.forEach((specKey) => {
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = specKey;
+    checkbox.title = specKey;
+
+    if (collected.includes(`${classKey}_${specKey}`)) {
+      checkbox.checked = true
+    }
+    specContainer.appendChild(checkbox);
+  });
+
+  container.appendChild(classTitle);
+  container.appendChild(specContainer);
+  specsSimpleContainer.appendChild(container);
+}
+
 function getSpecInfo(url) {
   const output = url
     .replace("https://www.wowhead.com/guide/classes/", "")
@@ -110,7 +170,7 @@ function updateSpecView() {
     collectionInfo = specs;
     const { total, collected } = specs;
     console.log("Received from background:", { total, collected });
-    insertSpectDom(total, collected);
+    insertDom(total, collected);
     checkHasCollect();
   });
 }
@@ -124,6 +184,7 @@ function updateUIByConfig(response) {
   config = response;
 
   autoJumpCheckbox.checked = config.autoJump;
+  updateUIByDisplayMode();
 }
 //#endregion
 
