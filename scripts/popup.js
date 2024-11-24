@@ -6,6 +6,13 @@ collectDataBtn.onclick = function () {
     const currentTab = tabs[0];
     const isValidURL = checkValidURL(currentTab.url);
     if (isValidURL) {
+      chrome.runtime.sendMessage(
+        { action: "updateWindowId", windowId: currentTab.windowId },
+        (res) => {
+          console.log(res);
+        }
+      );
+
       if (hasCollectedCurrentSpec) {
         chrome.runtime.sendMessage({ action: "jump", currentTab }, (res) => {
           console.log(res);

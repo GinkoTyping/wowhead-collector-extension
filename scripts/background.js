@@ -1,8 +1,9 @@
 let config = {
   autoJump: false,
-  jumpInterval: 3000,
+  jumpInterval: 1500,
   displayMode: "checkbox",
 };
+let windowId;
 
 const URLS = {
   "death-knight": ["blood", "frost", "unholy"],
@@ -10,13 +11,13 @@ const URLS = {
   druid: ["balance", "feral", "guardian", "restoration"],
   mage: ["arcane", "fire", "frost"],
   monk: ["brewmaster", "mistweaver", "windwalker"],
-  palading: ["holy", "protection", "retribution"],
+  paladin: ["holy", "protection", "retribution"],
   rogue: ["assassination", "outlaw", "subtlety"],
   shaman: ["elemental", "enhancement", "restoration"],
   warlock: ["affliction", "demonology", "destruction"],
   warrior: ["arms", "fury", "protection"],
   evoker: ["devastation", "preservation", "augmentation"],
-  hunter: ["beast-mastery", "marksmanship", "survial"],
+  hunter: ["beast-mastery", "marksmanship", "survival"],
   priest: ["discipline", "holy", "shadow"],
 };
 const URLS_ENTRIES = Object.entries(URLS);
@@ -47,10 +48,17 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     case "updateConfig":
       handleUpdateConfig(request, _sender, sendResponse);
       break;
+    case "updateWindowId":
+      handleUpdateWindowId(request, _sender, sendResponse);
+      break;
     default:
       break;
   }
 });
+
+function handleUpdateWindowId(request, _sender, sendResponse) {
+  windowId = request.windowId;
+}
 
 function getSpecInfo(url) {
   const output = url
@@ -87,6 +95,7 @@ function handleSave(request, _sender, sendResponse) {
     collectedURLs.push(combineKey);
   }
 
+  console.log({ collectedURLs });
   return sendResponse("Save succeeded.");
 }
 
@@ -95,11 +104,11 @@ function handleJump(request, _sender, sendResponse) {
   const { currentTab } = request;
   const nextURL = getNextURL();
   sendResponse("Jumping...");
-  chrome.tabs.create({ url: nextURL });
+  chrome.tabs.create({ url: nextURL, windowId });
 
-  chrome.tabs.query({ currentWindow: true }, (tabs) => {
+  chrome.tabs.query({ windowId }, (tabs) => {
     const lastTab = tabs.find((tab) =>
-      [tab.url, tab.pendingUrl].includes(currentTab)
+      [tab.url, tab.pendingUrl].includes(currentTab.url)
     );
     if (lastTab) {
       chrome.tabs.remove(lastTab.id);

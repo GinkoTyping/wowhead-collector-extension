@@ -55,9 +55,8 @@ function getData() {
 function getBisItem(containerId) {
   let itemDoms;
   if (containerId === "#overall-bis") {
-    itemDoms = document
-      .querySelector("#overall-bis")
-      .nextElementSibling.querySelectorAll("tbody tr");
+    const overallBIS = document.querySelector('#guide-body tbody');
+    itemDoms = overallBIS.querySelectorAll("tr");
   } else {
     itemDoms = document.querySelectorAll(`${containerId} tbody tr`);
   }
@@ -79,7 +78,7 @@ function getStatPriority() {
   if (possibleStats?.length) {
     return Array.from(possibleStats).find((item) =>
       item.innerText.toLowerCase().includes("mastery")
-    ).innerText;
+    )?.innerText;
   }
   return "/";
 }
@@ -88,7 +87,7 @@ function getTrinketsRank() {
   const lists = document.querySelectorAll(".tier-list-rows .tier-list-tier");
   if (lists?.length) {
     return Array.from(lists).map((list) => {
-      const tierLabel = list.querySelector(".tier-label").innerText;
+      const tierLabel = list.querySelector(".tier-label")?.innerText;
       const trinkets = list.querySelectorAll(".tier-content ins");
       return {
         label: tierLabel,
@@ -123,6 +122,11 @@ const UPDATE_PER_TIME = 100;
 function jumpCountDown(time) {
   restTime = time;
   setTimeout(() => {
+    intervalTimer = null;
+    if (countDownBox) {
+      countDownBox.classList.add("hide");
+    }
+
     chrome.runtime.sendMessage(
       {
         action: "jump",
@@ -130,17 +134,12 @@ function jumpCountDown(time) {
       },
       (res) => {
         console.log(res);
-        intervalTimer = null;
-        if (countDownBox) {
-          countDownBox.classList.add("hide");
-        }
       }
     );
   }, time);
   intervalTimer = setInterval(() => {
-    
     updateCountDownBox({
-      leftTime: restTime-= UPDATE_PER_TIME,
+      leftTime: (restTime -= UPDATE_PER_TIME),
       total: totalSpecCount,
       current: collectedSpecCount,
     });
@@ -183,7 +182,9 @@ function updateCountDownBox(params) {
   ).toFixed(1)} seconds.`;
   totalTextElement.innerText = total;
   currentProgressElement.innerText = current;
-  currentProgressElement.style.width = `${(current / total * 100).toFixed(2)}%`
+  currentProgressElement.style.width = `${((current / total) * 100).toFixed(
+    2
+  )}%`;
 }
 
 function updateSpec() {
