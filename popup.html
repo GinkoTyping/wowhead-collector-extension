@@ -5,19 +5,6 @@
 <body>
   <h2>Raider.io Collector</h2>
   <div class="content">
-    <div class="checkbox-container">
-      <p style="margin: 0">Display mode</p>
-      <div class="radios">
-        <label>
-          <input type="radio" name="display-mode" value="checkbox">
-          checkbox
-        </label>
-        <label>
-          <input type="radio" name="display-mode" value="detail">
-          detail
-        </label>
-      </div>
-    </div>
     <div class="specs-simple">
       <!-- template insert by DOM -->
 
@@ -42,9 +29,32 @@
         </div>
       </div> -->
     </div>
-    <div class="checkbox-container">
-      <span>Auto Jump</span>
-      <input id="auto-jump" type="checkbox" name="auto-jump">
+    <!-- <div class="checkbox-container">
+      <p style="margin: 0">Display mode</p>
+      <div class="radios">
+        <label>
+          <input type="radio" name="display-mode" value="checkbox">
+          checkbox
+        </label>
+        <label>
+          <input type="radio" name="display-mode" value="detail">
+          detail
+        </label>
+      </div>
+    </div> -->
+    <div class="setting-container">
+      <div class="checkbox-container">
+        <span>Display Detail</span>
+        <input id="display-mode" type="checkbox" name="display-mode">
+      </div>
+      <div class="checkbox-container">
+        <span>Is Override</span>
+        <input id="is-override" type="checkbox" name="is-override">
+      </div>
+      <div class="checkbox-container">
+        <span>Auto Jump</span>
+        <input id="auto-jump" type="checkbox" name="auto-jump">
+      </div>
     </div>
     <button id="collect">Collect BIS Data</button>
     <button id="export">Export BIS Data</button>

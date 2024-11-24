@@ -85,10 +85,11 @@ button.off {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 8px;
   font-size: 14px;
   color: var(--theme-text-color);
+  border-bottom: 1px solid rgb(255, 209, 0);
 }
-.checkbox-container p {
-  font-weight: 800;
+
+.setting-container {
+  margin: 4px 0;
 }

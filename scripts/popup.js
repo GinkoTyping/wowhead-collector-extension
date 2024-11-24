@@ -63,30 +63,36 @@ autoJumpCheckbox.onclick = function () {
   );
 };
 
-const displayRadios = document.querySelector(".radios");
-displayRadios.addEventListener("click", (e) => {
-  if (e.target.type === "radio" && config.displayMode !== e.target.value) {
-    config.displayMode = e.target.value;
-    chrome.runtime.sendMessage(
-      { action: "updateConfig", value: { displayMode: config.displayMode } },
-      (res) => {
-        // the size of the popup window changes, need to reload page.
-        window.location.reload();
-      }
-    );
-  }
-});
-function updateUIByDisplayMode() {
-  selectedRadio = displayRadios.querySelector(
-    `input[value=${config.displayMode}]`
+const overrideChechbox = document.querySelector("#is-override");
+overrideChechbox.onclick = function () {
+  config.isOverride = overrideChechbox.checked;
+  chrome.runtime.sendMessage(
+    { action: "updateConfig", value: { isOverride: overrideChechbox.checked } },
+    (res) => {
+      console.log(res);
+    }
   );
-  selectedRadio.checked = true;
-  if (config.displayMode === "checkbox") {
-    specsSimpleContainer.classList.remove("hide");
-    specsContainer.classList.add("hide");
-  } else {
+};
+
+const displayCheckbox = document.querySelector("#display-mode");
+displayCheckbox.addEventListener("click", (e) => {
+  config.displayDetail = displayCheckbox.checked;
+  chrome.runtime.sendMessage(
+    { action: "updateConfig", value: { displayDetail: displayCheckbox.checked } },
+    (res) => {
+      // the size of the popup window changes, need to reload page.
+      window.location.reload();
+    }
+  );
+});
+function updateUIBydisplayDetail() {
+  displayCheckbox.checked = config.displayDetail;
+  if (config.displayDetail) {
     specsContainer.classList.remove("hide");
     specsSimpleContainer.classList.add("hide");
+  } else {
+    specsSimpleContainer.classList.remove("hide");
+    specsContainer.classList.add("hide");
   }
 }
 
@@ -202,7 +208,8 @@ function updateUIByConfig(response) {
   config = response;
 
   autoJumpCheckbox.checked = config.autoJump;
-  updateUIByDisplayMode();
+  overrideChechbox.checked = config.isOverride;
+  updateUIBydisplayDetail();
 }
 //#endregion
 

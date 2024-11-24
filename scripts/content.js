@@ -44,6 +44,11 @@ checkAutoCollect();
 //#region collecting data
 function getData() {
   return {
+    collectedAt: new Intl.DateTimeFormat("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date()),
     statsPriority: getStatPriority(),
     overall: getBisItem("#overall-bis"),
     bisItemRaid: getBisItem("#tab-bis-items-raid"),
@@ -55,7 +60,7 @@ function getData() {
 function getBisItem(containerId) {
   let itemDoms;
   if (containerId === "#overall-bis") {
-    const overallBIS = document.querySelector('#guide-body tbody');
+    const overallBIS = document.querySelector("#guide-body tbody");
     itemDoms = overallBIS.querySelectorAll("tr");
   } else {
     itemDoms = document.querySelectorAll(`${containerId} tbody tr`);

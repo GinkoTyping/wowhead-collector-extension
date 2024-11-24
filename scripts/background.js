@@ -1,7 +1,22 @@
+let exportedData;
+chrome.runtime.onInstalled.addListener(() => {
+  const url = chrome.runtime.getURL("../export/spec-data.json");
+  fetch(url)
+    .then((response) => response.json())
+    .then((data) => {
+      exportedData = data;
+      console.log({ exportedData });
+    })
+    .catch((error) => {
+      console.error("Error fetching JSON:", error);
+    });
+});
+
 let config = {
   autoJump: false,
+  isOverride: false,
+  displayDetail: false,
   jumpInterval: 1500,
-  displayMode: "checkbox",
 };
 let windowId;
 
@@ -24,7 +39,7 @@ const URLS_ENTRIES = Object.entries(URLS);
 
 // [death-knight_frost, mage_frost]
 const collectedURLs = [];
-const collectedData = Object.entries(URLS).reduce((pre, [key, value]) => {
+let collectedData = Object.entries(URLS).reduce((pre, [key, value]) => {
   pre[key] = [];
   return pre;
 }, {});
@@ -77,8 +92,26 @@ function combineClassAndSpec(classKey, specKey) {
 }
 
 function saveSpecData(classes, spec, data) {
+  if (config.isOverride) {
+    collectedData = exportedData;
+  }
+
   if (collectedData[classes]) {
-    collectedData[classes].push({ spec, ...data });
+    if (config.isOverride) {
+      const index = collectedData[classes].findIndex((item) => {
+        if (item.spec === spec) {
+          return true;
+        }
+        return false;
+      });
+      if (index === -1) {
+        collectedData[classes].push({ spec, ...data });
+      } else {
+        collectedData[classes][index] = { spec, ...data };
+      }
+    } else {
+      collectedData[classes].push({ spec, ...data });
+    }
   } else {
     collectedData[classes] = [{ spec, ...data }];
   }
