@@ -37,7 +37,7 @@ collectDataBtn.onclick = function () {
   });
 };
 function checkValidURL(url) {
-  const regex = /^https:\/\/www\.wowhead\.com\/guide\/classes.*\/bis-gear$/;
+  const regex = /^https:\/\/www\.wowhead\.com\/cn\/guide\/classes.*\/bis-gear$/;
   return regex.test(url);
 }
 

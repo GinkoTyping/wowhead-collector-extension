@@ -77,7 +77,7 @@ function handleUpdateWindowId(request, _sender, sendResponse) {
 
 function getSpecInfo(url) {
   const output = url
-    .replace("https://www.wowhead.com/guide/classes/", "")
+    .replace("https://www.wowhead.com/cn/guide/classes/", "")
     .replace(/([^/]+)$/, "")
     .split("/");
   if (output) {
@@ -156,7 +156,7 @@ function getNextURL() {
       (spec) => !collectedURLs.includes(combineClassAndSpec(key, spec))
     );
     if (nextSpec) {
-      nextURL = `https://www.wowhead.com/guide/classes/${key}/${nextSpec}/bis-gear`;
+      nextURL = `https://www.wowhead.com/cn/guide/classes/${key}/${nextSpec}/bis-gear`;
       return true;
     }
     return false;
@@ -183,3 +183,8 @@ function handleUpdateConfig(request, _sender, sendResponse) {
 
   return sendResponse(`Update success: ${JSON.stringify(config)}`);
 }
+
+//#region 
+
+
+//#endregion

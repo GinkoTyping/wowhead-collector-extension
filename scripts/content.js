@@ -43,6 +43,7 @@ checkAutoCollect();
 
 //#region collecting data
 function getData() {
+  console.log(getStatPriority());
   return {
     collectedAt: new Intl.DateTimeFormat("zh-CN", {
       year: "numeric",
@@ -67,7 +68,12 @@ function getBisItem(containerId) {
   }
 
   return Array.from(itemDoms).map((dom) => {
-    const columns = dom.innerText?.replace(/\s+/g, ",").split(",");
+    const tds = dom.querySelectorAll('td');
+    const columns = Array.from(tds).reduce((pre, cur) => {
+      pre.push(cur.innerText);
+      return pre;
+    }, []);
+
     const itemIcon = dom.querySelector("img")?.src;
     return {
       slot: columns[0],
@@ -81,9 +87,31 @@ function getBisItem(containerId) {
 function getStatPriority() {
   const possibleStats = document.querySelectorAll("#guide-body b");
   if (possibleStats?.length) {
-    return Array.from(possibleStats).find((item) =>
-      item.innerText.toLowerCase().includes("mastery")
-    )?.innerText;
+    // return Array.from(possibleStats).find((item) =>
+    //   item.innerText.toLowerCase().includes("mastery")
+    // )?.innerText;
+
+    return Array.from(possibleStats).reduce((pre, cur) => {
+      const text = cur.innerText.toLowerCase();
+      if (pre.includes("haste")
+      && pre.includes("crit")
+      && pre.includes("versatility")
+      && pre.includes("mastery")
+      && pre.length
+      ) {
+        return pre;
+      }
+
+      if (text.includes("haste")
+        || text.includes("crit")
+        || text.includes("versatility")
+        || text.includes("mastery")
+      ) {
+        pre += ` ${text}`;
+        return pre;
+      }
+      return pre;
+    }, "");
   }
   return "/";
 }
