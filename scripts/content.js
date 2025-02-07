@@ -64,7 +64,7 @@ function getSlotLabel(key) {
     head: '头部',
     neck: '颈部',
     shoulders: '肩部',
-    cloak: '项链',
+    cloak: '披风',
     chest: '胸甲',
     wrist: '手腕',
     gloves: '手套',
@@ -211,12 +211,14 @@ function getTrinketsRank() {
   if (lists?.length) {
     return Array.from(lists).map((list) => {
       const tierLabel = list.querySelector('.tier-label')?.innerText;
+      const url = Array.from(list.querySelectorAll('.tier-content a'));
       const trinkets = list.querySelectorAll('.tier-content ins');
       return {
         label: tierLabel,
-        trinkets: Array.from(trinkets).map((item) =>
-          getImageFileName(item.style.backgroundImage)
-        ),
+        trinkets: Array.from(trinkets).map((item, index) => ({
+          id: getItemIdByURL(url[index].href),
+          image: getImageFileName(item.style.backgroundImage),
+        })),
       };
     });
   }
