@@ -143,7 +143,7 @@ function getBisItem(containerId) {
       return pre;
     }, []);
 
-    const itemIcon = dom.querySelector("img")?.src;
+    const itemIcon = dom.querySelector("img")?.src?.split('/').pop() ?? '';
     return {
       slot: getSlotLabel(columns[0]),
       item: columns[1].trim(),
@@ -188,6 +188,14 @@ function getStatPriority() {
   return "/";
 }
 
+function getImageFileName(url) {
+  const regex = /url\("([^"]*)"\)/;
+  const path = url.match(regex)?.[1];
+  if (path?.length) {
+    return path.split("/").pop() ?? "";
+  }
+  return "";
+}
 function getTrinketsRank() {
   const lists = document.querySelectorAll(".tier-list-rows .tier-list-tier");
   if (lists?.length) {
@@ -196,8 +204,8 @@ function getTrinketsRank() {
       const trinkets = list.querySelectorAll(".tier-content ins");
       return {
         label: tierLabel,
-        trinkets: Array.from(trinkets).map(
-          (item) => item.style.backgroundImage
+        trinkets: Array.from(trinkets).map((item) =>
+          getImageFileName(item.style.backgroundImage)
         ),
       };
     });
