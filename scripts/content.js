@@ -58,6 +58,71 @@ function getData() {
   };
 }
 
+function getSlotLabel(key) {
+  const lowerCaseKey = key.toLowerCase();
+  const locales = {
+    head: "头部",
+    neck: "颈部",
+    shoulders: "肩部",
+    cloak: "项链",
+    chest: "胸甲",
+    wrist: "手腕",
+    gloves: "手套",
+    belt: "腰带",
+    legs: "腿部",
+    boots: "脚部",
+    ["alt (aoe)"]: "饰品",
+    ["alt (single)"]: "饰品",
+    weapon: "武器",
+    ["main hand"]: "主手",
+    ["off hand"]: "副手",
+    offhand: "副手",
+  };
+
+  if (locales[lowerCaseKey]?.length) {
+    return locales[lowerCaseKey];
+  }
+
+  if (lowerCaseKey.includes("trinket")) {
+    return "饰品";
+  }
+
+  if (lowerCaseKey.includes("ring")) {
+    return "戒指";
+  }
+
+  return "";
+}
+function getSourceLabel(source) {
+  if (!source) {
+    return { source: "/", isLoot: false };
+  }
+  if (
+    ["crafting", "leatherworking", "blacksmithing", "crafted"].includes(
+      source.toLowerCase()
+    )
+  ) {
+    return { source: "制造装备", isLoot: false };
+  }
+
+  if (source.toLowerCase().includes("catalyst")) {
+    return { source: "职业套装", isLoot: false };
+  }
+
+  if (source.toLowerCase().includes("trash")) {
+    return { source: "团本小怪", isLoot: false };
+  }
+
+  const output = source.replace(/[a-zA-Z\s|\/\(\)尼鲁巴尔王宫]/g, "");
+  return { source: output.replace(",,", ""), isLoot: true };
+}
+function getItemIdByURL(url) {
+  const id = url
+    .split("/")
+    .find((item) => item.includes("item="))
+    ?.split("item=")[1];
+  return isNaN(Number(id)) ? null : Number(id);
+}
 function getBisItem(containerId) {
   let itemDoms;
   if (containerId === "#overall-bis") {
@@ -68,17 +133,22 @@ function getBisItem(containerId) {
   }
 
   return Array.from(itemDoms).map((dom) => {
-    const tds = dom.querySelectorAll('td');
-    const columns = Array.from(tds).reduce((pre, cur) => {
+    const tds = dom.querySelectorAll("td");
+    let itemId;
+    const columns = Array.from(tds).reduce((pre, cur, index) => {
+      if (index === 1 && cur.querySelector("a")) {
+        itemId = getItemIdByURL(cur.querySelector("a").href);
+      }
       pre.push(cur.innerText);
       return pre;
     }, []);
 
     const itemIcon = dom.querySelector("img")?.src;
     return {
-      slot: columns[0],
-      item: columns[1],
-      source: columns[2],
+      slot: getSlotLabel(columns[0]),
+      item: columns[1].trim(),
+      source: getSourceLabel(columns[2]),
+      id: itemId,
       itemIcon,
     };
   });
@@ -93,19 +163,21 @@ function getStatPriority() {
 
     return Array.from(possibleStats).reduce((pre, cur) => {
       const text = cur.innerText.toLowerCase();
-      if (pre.includes("haste")
-      && pre.includes("crit")
-      && pre.includes("versatility")
-      && pre.includes("mastery")
-      && pre.length
+      if (
+        pre.includes("haste") &&
+        pre.includes("crit") &&
+        pre.includes("versatility") &&
+        pre.includes("mastery") &&
+        pre.length
       ) {
         return pre;
       }
 
-      if (text.includes("haste")
-        || text.includes("crit")
-        || text.includes("versatility")
-        || text.includes("mastery")
+      if (
+        text.includes("haste") ||
+        text.includes("crit") ||
+        text.includes("versatility") ||
+        text.includes("mastery")
       ) {
         pre += ` ${text}`;
         return pre;
@@ -192,7 +264,7 @@ let collectedSpecCount;
 function updateCountDownBox(params) {
   const { leftTime, total, current } = params;
   if (countDownBox && leftTime <= 0) {
-    countDownBox.style.display = 'none'
+    countDownBox.style.display = "none";
   }
   if (!countDownBox) {
     countDownBox = document.createElement("div");
