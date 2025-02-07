@@ -91,7 +91,7 @@ function getSlotLabel(key) {
     return '戒指';
   }
 
-  return '';
+  return key;
 }
 function getSourceLabel(source) {
   if (!source) {
@@ -113,7 +113,11 @@ function getSourceLabel(source) {
     return { source: '团本小怪', isLoot: false };
   }
 
-  const output = source.replace(/[a-zA-Z\s|\/\(\)尼鲁巴尔王宫]/g, '');
+  if (source.toLowerCase().includes('siren')) {
+    return { source: '海妖岛', isLoot: false };
+  }
+
+  const output = source.replace(/[\|\/\(\)]/g, '');
   return { source: output.replace(',,', ''), isLoot: true };
 }
 function getItemIdByURL(url) {
@@ -142,8 +146,10 @@ function getBisItem(containerId) {
     const columns = Array.from(tds).reduce((pre, cur, index) => {
       if (index === 1 && cur.querySelector('a')) {
         itemId = getItemIdByURL(cur.querySelector('a').href);
+        pre.push(cur.querySelector('a').innerText);
+      } else {
+        pre.push(cur.innerText);
       }
-      pre.push(cur.innerText);
       return pre;
     }, []);
 
