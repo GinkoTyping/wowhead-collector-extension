@@ -176,6 +176,9 @@ function jumpCountDown(time) {
       total: totalSpecCount,
       current: collectedSpecCount,
     });
+    if (restTime <= 0) {
+      intervalTimer = null;
+    }
   }, UPDATE_PER_TIME);
 }
 
@@ -188,7 +191,9 @@ let totalSpecCount;
 let collectedSpecCount;
 function updateCountDownBox(params) {
   const { leftTime, total, current } = params;
-
+  if (countDownBox && leftTime <= 0) {
+    countDownBox.style.display = 'none'
+  }
   if (!countDownBox) {
     countDownBox = document.createElement("div");
     countDownBox.classList.add("count-down-container");

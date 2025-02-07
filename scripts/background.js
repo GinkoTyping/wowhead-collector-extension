@@ -137,16 +137,18 @@ function handleJump(request, _sender, sendResponse) {
   const { currentTab } = request;
   const nextURL = getNextURL();
   sendResponse("Jumping...");
-  chrome.tabs.create({ url: nextURL, windowId });
+  if (nextURL) {
+    chrome.tabs.create({ url: nextURL, windowId });
 
-  chrome.tabs.query({ windowId }, (tabs) => {
-    const lastTab = tabs.find((tab) =>
-      [tab.url, tab.pendingUrl].includes(currentTab.url)
-    );
-    if (lastTab) {
-      chrome.tabs.remove(lastTab.id);
-    }
-  });
+    chrome.tabs.query({ windowId }, (tabs) => {
+      const lastTab = tabs.find((tab) =>
+        [tab.url, tab.pendingUrl].includes(currentTab.url)
+      );
+      if (lastTab) {
+        chrome.tabs.remove(lastTab.id);
+      }
+    });
+  }
 }
 
 function getNextURL() {
