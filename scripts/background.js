@@ -1,6 +1,6 @@
 let exportedData;
 chrome.runtime.onInstalled.addListener(() => {
-  const url = chrome.runtime.getURL("../export/spec-data.json");
+  const url = chrome.runtime.getURL('../export/spec-data.json');
   fetch(url)
     .then((response) => response.json())
     .then((data) => {
@@ -8,7 +8,7 @@ chrome.runtime.onInstalled.addListener(() => {
       console.log({ exportedData });
     })
     .catch((error) => {
-      console.error("Error fetching JSON:", error);
+      console.error('Error fetching JSON:', error);
     });
 });
 
@@ -21,19 +21,19 @@ let config = {
 let windowId;
 
 const URLS = {
-  "death-knight": ["blood", "frost", "unholy"],
-  "demon-hunter": ["havoc", "vengeance"],
-  druid: ["balance", "feral", "guardian", "restoration"],
-  mage: ["arcane", "fire", "frost"],
-  monk: ["brewmaster", "mistweaver", "windwalker"],
-  paladin: ["holy", "protection", "retribution"],
-  rogue: ["assassination", "outlaw", "subtlety"],
-  shaman: ["elemental", "enhancement", "restoration"],
-  warlock: ["affliction", "demonology", "destruction"],
-  warrior: ["arms", "fury", "protection"],
-  evoker: ["devastation", "preservation", "augmentation"],
-  hunter: ["beast-mastery", "marksmanship", "survival"],
-  priest: ["discipline", "holy", "shadow"],
+  'death-knight': ['blood', 'frost', 'unholy'],
+  'demon-hunter': ['havoc', 'vengeance'],
+  druid: ['balance', 'feral', 'guardian', 'restoration'],
+  mage: ['arcane', 'fire', 'frost'],
+  monk: ['brewmaster', 'mistweaver', 'windwalker'],
+  paladin: ['holy', 'protection', 'retribution'],
+  rogue: ['assassination', 'outlaw', 'subtlety'],
+  shaman: ['elemental', 'enhancement', 'restoration'],
+  warlock: ['affliction', 'demonology', 'destruction'],
+  warrior: ['arms', 'fury', 'protection'],
+  evoker: ['devastation', 'preservation', 'augmentation'],
+  hunter: ['beast-mastery', 'marksmanship', 'survival'],
+  priest: ['discipline', 'holy', 'shadow'],
 };
 const URLS_ENTRIES = Object.entries(URLS);
 
@@ -46,25 +46,35 @@ let collectedData = Object.entries(URLS).reduce((pre, [key, value]) => {
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   switch (request.action) {
-    case "save":
+    case 'save':
       handleSave(request, _sender, sendResponse);
       break;
-    case "jump":
-      handleJump(request, _sender, sendResponse);
+    case 'jump':
+      const nextURL = getNextURL();
+      handleJump(request, nextURL);
       break;
-    case "export":
+    case 'export':
       handlExport(request, _sender, sendResponse);
       break;
-    case "querySpecs":
+    case 'querySpecs':
       handleQuerySpecs(request, _sender, sendResponse);
       break;
-    case "queryConfig":
+    case 'queryConfig':
       handleQueryConfig(request, _sender, sendResponse);
-    case "updateConfig":
+    case 'updateConfig':
       handleUpdateConfig(request, _sender, sendResponse);
       break;
-    case "updateWindowId":
+    case 'updateWindowId':
       handleUpdateWindowId(request, _sender, sendResponse);
+      break;
+    case 'saveSpellToSearch':
+      handleSaveSpellToSearch(request, _sender, sendResponse);
+      break;
+    case 'toNextSpell':
+      handleToNextSpell(request, _sender, sendResponse);
+      break;
+    case 'getSpellsToSearch':
+      sendResponse(spellToSearch);
       break;
     default:
       break;
@@ -77,14 +87,14 @@ function handleUpdateWindowId(request, _sender, sendResponse) {
 
 function getSpecInfo(url) {
   const output = url
-    .replace("https://www.wowhead.com/cn/guide/classes/", "")
-    .replace(/([^/]+)$/, "")
-    .split("/");
+    .replace('https://www.wowhead.com/cn/guide/classes/', '')
+    .replace(/([^/]+)$/, '')
+    .split('/');
   if (output) {
     output.pop();
     return output;
   }
-  return "";
+  return '';
 }
 
 function combineClassAndSpec(classKey, specKey) {
@@ -129,16 +139,14 @@ function handleSave(request, _sender, sendResponse) {
   }
 
   console.log({ collectedURLs });
-  return sendResponse("Save succeeded.");
+  return sendResponse('Save succeeded.');
 }
 
 //#region Jump
-function handleJump(request, _sender, sendResponse) {
+function handleJump(request, nextUrl) {
   const { currentTab } = request;
-  const nextURL = getNextURL();
-  sendResponse("Jumping...");
-  if (nextURL) {
-    chrome.tabs.create({ url: nextURL, windowId });
+  if (nextUrl) {
+    chrome.tabs.create({ url: nextUrl, windowId });
 
     chrome.tabs.query({ windowId }, (tabs) => {
       const lastTab = tabs.find((tab) =>
@@ -186,7 +194,26 @@ function handleUpdateConfig(request, _sender, sendResponse) {
   return sendResponse(`Update success: ${JSON.stringify(config)}`);
 }
 
-//#region 
-
-
+//#region 技能数据
+let spellToSearch = [];
+let spellDoneCount = 0;
+function getSpellUrl(spellId) {
+  return `https://www.wowhead.com/cn/spell=${spellId}`;
+}
+function handleSaveSpellToSearch(request, _sender, sendResponse) {
+  spellToSearch = request.data;
+  handleJump(request, getSpellUrl(spellToSearch.shift()?.id));
+}
+function handleToNextSpell(request, _sender, sendResponse) {
+  if (spellToSearch.length) {
+    const spell = spellToSearch.shift();
+    spellDoneCount++;
+    console.log(
+      `当前SPELL进度: ${spellDoneCount} / ${
+        spellToSearch.length + spellDoneCount
+      }`
+    );
+    handleJump({ currentTab: _sender.tab }, getSpellUrl(spell.id));
+  }
+}
 //#endregion

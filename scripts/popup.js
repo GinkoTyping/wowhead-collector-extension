@@ -119,22 +119,6 @@ function insertBisDom(total, collected) {
   });
 }
 
-let collectSpellBtn;
-function insertSpellDom() {
-  collectSpellBtn = document.createElement('button');
-  collectSpellBtn.id = 'collect-spell';
-  collectSpellBtn.innerText = 'Collect Spell';
-  document.querySelector('.content').append(collectSpellBtn);
-  collectSpellBtn.onclick = function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: 'querySpells' }, (response) => {
-        console.log(response);
-      });
-    })
-
-  };
-}
-
 function insertSpec(classKey, specs, collected) {
   const container = document.createElement('div');
   container.classList.add(classKey);
@@ -237,6 +221,48 @@ function updateUIByConfig(response) {
   overrideChechbox.checked = config.isOverride;
   updateUIBydisplayDetail();
 }
+//#endregion
+
+//#region spell相关
+let collectSpellBtn;
+function insertSpellDom() {
+  collectSpellBtn = document.createElement('button');
+  collectSpellBtn.id = 'collect-spell';
+  collectSpellBtn.innerText = 'Collect Spell';
+  document.querySelector('.content').append(collectSpellBtn);
+  collectSpellBtn.onclick = function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.runtime.sendMessage({
+        action: 'updateWindowId',
+        windowId: tabs[0].windowId,
+      });
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { action: 'querySpells' },
+        (data) => {}
+      );
+    });
+  };
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.action) {
+    case 'passSpellData':
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.runtime.sendMessage({
+          action: 'saveSpellToSearch',
+          currentTab: tabs[0],
+          data: request.data,
+        });
+      });
+
+      // // 关键！告诉 Chrome 保持通道开放以等待异步响应(chrome.tabs.query是异步)
+      return true;
+
+    default:
+      break;
+  }
+});
 //#endregion
 
 updatePopupView();
