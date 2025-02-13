@@ -56,7 +56,7 @@ function getSpellData() {
   const id = Number(getIdByUrl(location.href));
   const container = document.querySelector('.wowhead-tooltip');
   const nameZH = container.querySelector('b.whtt-name').innerText;
-  const description = container.querySelector('.q').innerText;
+  const description = container.querySelector('.q').innerText.replaceAll(' sec', '秒');
 
   let cost;
   let range;
@@ -70,7 +70,7 @@ function getSpellData() {
     if (title) {
       switch (title) {
         case '成本':
-          cost = value;
+          cost = value.replace(' 值', '');
           break;
         case '范围':
           range = value;
