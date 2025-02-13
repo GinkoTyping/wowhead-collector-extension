@@ -14,6 +14,14 @@
   "content_scripts": [
     {
       "js": [
+        "scripts/content/wowhead-ad.js"
+      ],
+      "matches": [
+        "https://www.wowhead.com/*"
+      ]
+    },
+    {
+      "js": [
         "scripts/content.js"
       ],
       "css": [
