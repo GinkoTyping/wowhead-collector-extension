@@ -22,7 +22,7 @@ collectDataBtn.onclick = function () {
           currentTab.id,
           { action: 'BIS' },
           (response) => {
-            updateSpecView();
+            updatePopupView();
           }
         );
       }
@@ -91,11 +91,11 @@ displayCheckbox.addEventListener('click', (e) => {
 function updateUIBydisplayDetail() {
   displayCheckbox.checked = config.displayDetail;
   if (config.displayDetail) {
-    specsContainer.classList.remove('hide');
-    specsSimpleContainer.classList.add('hide');
+    specsContainer?.classList.remove('hide');
+    specsSimpleContainer?.classList.add('hide');
   } else {
-    specsSimpleContainer.classList.remove('hide');
-    specsContainer.classList.add('hide');
+    specsSimpleContainer?.classList.remove('hide');
+    specsContainer?.classList.add('hide');
   }
 }
 
@@ -106,7 +106,7 @@ let collectionInfo;
 let hasCollectedCurrentSpec;
 const COLLECTED_TEXT = 'Collected. Next';
 const NOT_COLLECTED_TEXT = 'Collecte BIS Data';
-function insertDom(total, collected) {
+function insertBisDom(total, collected) {
   specsContainer = specsContainer ?? document.querySelector('.specs');
   specsSimpleContainer =
     specsSimpleContainer ?? document.querySelector('.specs-simple');
@@ -117,6 +117,22 @@ function insertDom(total, collected) {
     insertSpecSimple(classKey, total[classKey], collected);
     insertSpec(classKey, total[classKey], collected);
   });
+}
+
+let collectSpellBtn;
+function insertSpellDom() {
+  collectSpellBtn = document.createElement('button');
+  collectSpellBtn.id = 'collect-spell';
+  collectSpellBtn.innerText = 'Collect Spell';
+  document.querySelector('.content').append(collectSpellBtn);
+  collectSpellBtn.onclick = function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'querySpells' }, (response) => {
+        console.log(response);
+      });
+    })
+
+  };
 }
 
 function insertSpec(classKey, specs, collected) {
@@ -192,14 +208,20 @@ function checkHasCollect() {
     collectDataBtn.classList[hasCollectedCurrentSpec ? 'add' : 'remove']('off');
   });
 }
-function updateSpecView() {
-  chrome.runtime.sendMessage({ action: 'querySpecs' }, (specs) => {
-    collectionInfo = specs;
-    const { total, collected } = specs;
-    console.log('Received from background:', { total, collected });
-
-    insertDom(total, collected);
-    checkHasCollect();
+function updatePopupView() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    console.log(tabs[0].url);
+    if (tabs[0].url.includes('www.wowhead.com/cn/spell')) {
+      insertSpellDom();
+    } else {
+      chrome.runtime.sendMessage({ action: 'querySpecs' }, (specs) => {
+        collectionInfo = specs;
+        const { total, collected } = specs;
+        console.log('Received from background:', { total, collected });
+        insertBisDom(total, collected);
+        checkHasCollect();
+      });
+    }
   });
 }
 //#endregion
@@ -217,5 +239,5 @@ function updateUIByConfig(response) {
 }
 //#endregion
 
-updateSpecView();
+updatePopupView();
 updateConfig();

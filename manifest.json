@@ -16,9 +16,22 @@
       "js": [
         "scripts/content.js"
       ],
-      "css": ["css/content.css"],
+      "css": [
+        "css/content.css"
+      ],
       "matches": [
-        "https://www.wowhead.com/*"
+        "https://www.wowhead.com/cn/guide/*"
+      ]
+    },
+    {
+      "js": [
+        "scripts/content/wowhead-spell.js"
+      ],
+      "css": [
+        "css/content.css"
+      ],
+      "matches": [
+        "https://www.wowhead.com/cn/spell*"
       ]
     }
   ],

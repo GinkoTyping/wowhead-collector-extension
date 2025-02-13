@@ -12,7 +12,9 @@ adList.forEach((ad) => {
   }
 });
 
-document.querySelector('#page-content').style.paddingRight = 0;
+if (document.querySelector('#page-content')) {
+  document.querySelector('#page-content').style.paddingRight = 0;
+}
 
 // Collect data
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
