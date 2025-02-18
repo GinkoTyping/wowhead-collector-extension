@@ -197,7 +197,7 @@ function updatePopupView() {
     console.log(tabs[0].url);
     if (tabs[0].url.includes('www.wowhead.com/cn/spell')) {
       insertSpellDom();
-    } else {
+    } else if (tabs[0].url.includes('www.wowhead.com/cn/guide')) {
       chrome.runtime.sendMessage({ action: 'querySpecs' }, (specs) => {
         collectionInfo = specs;
         const { total, collected } = specs;
@@ -205,6 +205,8 @@ function updatePopupView() {
         insertBisDom(total, collected);
         checkHasCollect();
       });
+    } else if (tabs[0].url.includes('www.icy-veins.com/wow')) {
+      insertGetTierList();
     }
   });
 }
@@ -263,6 +265,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
   }
 });
+//#endregion
+
+//#region icy-iven 排名
+let colletTierListBtn;
+function insertGetTierList() {
+  colletTierListBtn = document.createElement('button');
+  colletTierListBtn.id = 'collect-tier-list';
+  colletTierListBtn.innerText = 'Collect Tier List';
+  document.querySelector('.content').append(colletTierListBtn);
+  colletTierListBtn.onclick = function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.runtime.sendMessage({
+        action: 'updateWindowId',
+        windowId: tabs[0].windowId,
+      });
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { action: 'collectTierList' },
+        (data) => {}
+      );
+    });
+  };
+}
 //#endregion
 
 updatePopupView();

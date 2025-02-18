@@ -41,6 +41,17 @@
       "matches": [
         "https://www.wowhead.com/cn/spell*"
       ]
+    },
+    {
+      "js": [
+        "scripts/content/icy-veins.js"
+      ],
+      "css": [
+        "css/content.css"
+      ],
+      "matches": [
+        "https://www.icy-veins.com/wow/*"
+      ]
     }
   ],
   "background": {
