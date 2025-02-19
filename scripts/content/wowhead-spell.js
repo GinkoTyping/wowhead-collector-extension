@@ -18,10 +18,14 @@ async function tryCollectData() {
   chrome.runtime.sendMessage(
     { action: 'getSpellsToSearch' },
     async (spellsToSearch) => {
-      if (spellsToSearch?.length) {
+
+      // 初始化前， spellsToSearch为null，避免初始化前就触发
+      if (spellsToSearch) {
         let response;
+        let spellData;
+        let error = null;
         try {
-          const spellData = getSpellData();
+          spellData = getSpellData();
           response = await fetch('http://localhost:3000/api/wow/spell/update', {
             method: 'POST',
             headers: {
@@ -29,11 +33,14 @@ async function tryCollectData() {
             },
             body: JSON.stringify(spellData),
           });
-        } catch (error) {
+        } catch (e) {
+          error = e;
         } finally {
           chrome.runtime.sendMessage({
             action: 'toNextSpell',
             isSuccess: response?.status === 200,
+            spellData,
+            error,
           });
         }
       }
@@ -56,7 +63,9 @@ function getSpellData() {
   const id = Number(getIdByUrl(location.href));
   const container = document.querySelector('.wowhead-tooltip');
   const nameZH = container.querySelector('b.whtt-name').innerText;
-  const description = container.querySelector('.q').innerText.replaceAll(' sec', '秒');
+  const description = container
+    .querySelector('.q')
+    ?.innerText.replaceAll(' sec', '秒');
 
   let cost;
   let range;

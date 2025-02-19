@@ -71,6 +71,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       handleSaveSpellToSearch(request, _sender, sendResponse);
       break;
     case 'toNextSpell':
+      handleLogSpellAction(request);
       handleToNextSpell(request, _sender, sendResponse);
       break;
     case 'getSpellsToSearch':
@@ -195,7 +196,7 @@ function handleUpdateConfig(request, _sender, sendResponse) {
 }
 
 //#region 技能数据
-let spellToSearch = [];
+let spellToSearch;
 let spellDoneCount = 0;
 function getSpellUrl(spellId) {
   return `https://www.wowhead.com/cn/spell=${spellId}`;
@@ -204,6 +205,13 @@ function handleSaveSpellToSearch(request, _sender, sendResponse) {
   spellToSearch = request.data;
   handleJump(request, getSpellUrl(spellToSearch.shift()?.id));
 }
+function handleLogSpellAction(request) {
+  if (request.isSuccess) {
+    console.log(`状态：${request.isSuccess ? '√' : 'X'}`, request.spellData);
+  } else {
+    console.log(`状态：${request.isSuccess ? '√' : 'X'}`, request.error);
+  }
+}
 function handleToNextSpell(request, _sender, sendResponse) {
   if (spellToSearch.length) {
     const spell = spellToSearch.shift();
@@ -211,7 +219,7 @@ function handleToNextSpell(request, _sender, sendResponse) {
     console.log(
       `当前SPELL进度: ${spellDoneCount} / ${
         spellToSearch.length + spellDoneCount
-      }`
+      }  ${JSON.stringify(spell)}`
     );
     handleJump({ currentTab: _sender.tab }, getSpellUrl(spell.id));
   }
