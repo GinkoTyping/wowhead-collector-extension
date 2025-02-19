@@ -246,25 +246,6 @@ function insertSpellDom() {
     });
   };
 }
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case 'passSpellData':
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.runtime.sendMessage({
-          action: 'saveSpellToSearch',
-          currentTab: tabs[0],
-          data: request.data,
-        });
-      });
-
-      // // 关键！告诉 Chrome 保持通道开放以等待异步响应(chrome.tabs.query是异步)
-      return true;
-
-    default:
-      break;
-  }
-});
 //#endregion
 
 //#region icy-iven 排名

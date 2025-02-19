@@ -68,7 +68,8 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       handleUpdateWindowId(request, _sender, sendResponse);
       break;
     case 'saveSpellToSearch':
-      handleSaveSpellToSearch(request, _sender, sendResponse);
+      spellToSearch = request.data;
+      handleToNextSpell(request, _sender, sendResponse);
       break;
     case 'toNextSpell':
       handleLogSpellAction(request);
@@ -201,10 +202,7 @@ let spellDoneCount = 0;
 function getSpellUrl(spellId) {
   return `https://www.wowhead.com/cn/spell=${spellId}`;
 }
-function handleSaveSpellToSearch(request, _sender, sendResponse) {
-  spellToSearch = request.data;
-  handleJump(request, getSpellUrl(spellToSearch.shift()?.id));
-}
+
 function handleLogSpellAction(request) {
   if (request.isSuccess) {
     console.log(`状态：${request.isSuccess ? '√' : 'X'}`, request.spellData);

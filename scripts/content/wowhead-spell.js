@@ -7,7 +7,7 @@ chrome.runtime.onMessage.addListener(async function (
     const response = await fetch('http://localhost:3000/api/wow/spell/blank');
     const data = await response.json();
     chrome.runtime.sendMessage({
-      action: 'passSpellData',
+      action: 'saveSpellToSearch',
       data,
     });
     return true;
