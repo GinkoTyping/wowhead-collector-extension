@@ -40,6 +40,8 @@ async function queryDungeonByName(nameEN) {
     console.log(error);
     if (nameEN === 'Operation: Floodgate') {
       return '水闸行动';
+    } else if (nameEN === 'Operation: Mechagon Workshop') {
+      return '麦卡贡车间';
     } else {
       return `${nameEN}(团本)`;
     }
