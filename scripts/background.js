@@ -22,18 +22,18 @@ let windowId;
 
 const URLS = {
   'death-knight': ['blood', 'frost', 'unholy'],
-  // 'demon-hunter': ['havoc', 'vengeance'],
-  // druid: ['balance', 'feral', 'guardian', 'restoration'],
-  // mage: ['arcane', 'fire', 'frost'],
-  // monk: ['brewmaster', 'mistweaver', 'windwalker'],
-  // paladin: ['holy', 'protection', 'retribution'],
-  // rogue: ['assassination', 'outlaw', 'subtlety'],
-  // shaman: ['elemental', 'enhancement', 'restoration'],
-  // warlock: ['affliction', 'demonology', 'destruction'],
-  // warrior: ['arms', 'fury', 'protection'],
-  // evoker: ['devastation', 'preservation', 'augmentation'],
-  // hunter: ['beast-mastery', 'marksmanship', 'survival'],
-  // priest: ['discipline', 'holy', 'shadow'],
+  'demon-hunter': ['havoc', 'vengeance'],
+  druid: ['balance', 'feral', 'guardian', 'restoration'],
+  mage: ['arcane', 'fire', 'frost'],
+  monk: ['brewmaster', 'mistweaver', 'windwalker'],
+  paladin: ['holy', 'protection', 'retribution'],
+  rogue: ['assassination', 'outlaw', 'subtlety'],
+  shaman: ['elemental', 'enhancement', 'restoration'],
+  warlock: ['affliction', 'demonology', 'destruction'],
+  warrior: ['arms', 'fury', 'protection'],
+  evoker: ['devastation', 'preservation', 'augmentation'],
+  hunter: ['beast-mastery', 'marksmanship', 'survival'],
+  priest: ['discipline', 'holy', 'shadow'],
 };
 const URLS_ENTRIES = Object.entries(URLS);
 
@@ -179,6 +179,7 @@ function getNextURL() {
 //#region
 
 function handlExport(request, _sender, sendResponse) {
+  return sendResponse(exportedData);
   return sendResponse(collectedData);
 }
 

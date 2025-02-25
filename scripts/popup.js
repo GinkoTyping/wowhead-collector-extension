@@ -55,11 +55,19 @@ exportDataBtn.onclick = function () {
         (pre, cur) => {
           cur.forEach((spec) => {
             ['overall', 'bisItemRaid', 'bisItemMythic'].forEach((bisType) => {
-              pre.items.push(...spec[bisType].map((item) => item.fullImageURL));
+              pre.items.push(
+                ...spec[bisType]
+                  .filter((item) => item?.fullImageURL)
+                  .map((item) => item.fullImageURL)
+              );
             });
             pre.trinkets.push(
               ...spec.trinkets.reduce((output, tier) => {
-                output.push(...tier.trinkets.map((item) => item.fullImageURL));
+                output.push(
+                  ...tier.trinkets
+                    .filter((item) => item?.fullImageURL)
+                    .map((item) => item.fullImageURL)
+                );
                 return output;
               }, [])
             );

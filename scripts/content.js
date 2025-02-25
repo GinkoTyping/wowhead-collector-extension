@@ -171,8 +171,7 @@ async function getBisItem(containerId) {
     };
   }
 
-  // TODO test
-  const promises = domArray.slice(0, 2).map((dom) => mapItemInfo(dom));
+  const promises = domArray.map((dom) => mapItemInfo(dom));
 
   const results = await Promise.allSettled(promises);
   return results.map((result) => result.value);
