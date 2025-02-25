@@ -1,25 +1,11 @@
-// Remove ads
-const adList = [
-  '.main .blocks',
-  '.pbs__player',
-  '#page-content .sidebar-wrapper',
-  '#video-pos-body',
-];
-adList.forEach((ad) => {
-  const dom = document.querySelector(ad);
-  if (dom) {
-    dom.style.display = 'none';
-  }
-});
-
-if (document.querySelector('#page-content')) {
-  document.querySelector('#page-content').style.paddingRight = 0;
-}
-
 // Collect data
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function (
+  request,
+  sender,
+  sendResponse
+) {
   if (request.action == 'BIS') {
-    const data = getData();
+    const data = await getData();
     chrome.runtime.sendMessage(
       {
         action: 'save',
@@ -29,12 +15,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       (res) => {
         console.log(res);
         sendResponse(data);
-
         chrome.runtime.sendMessage({ action: 'queryConfig' }, (config) => {
           if (config.autoJump) {
             jumpCountDown(config.jumpInterval);
           }
         });
+
+        return true;
       }
     );
   }
@@ -44,20 +31,24 @@ updateSpec();
 checkAutoCollect();
 
 //#region collecting data
-function getData() {
-  console.log(getStatPriority());
-  return {
+async function getData() {
+  const overall = await getBisItem('#overall-bis');
+  const bisItemRaid = await getBisItem('#tab-bis-items-raid');
+  const bisItemMythic = await getBisItem('#tab-bis-items-mythic');
+  const data = {
     collectedAt: new Intl.DateTimeFormat('zh-CN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     }).format(new Date()),
-    statsPriority: getStatPriority()?.trim(),
-    overall: getBisItem('#overall-bis'),
-    bisItemRaid: getBisItem('#tab-bis-items-raid'),
-    bisItemMythic: getBisItem('#tab-bis-items-mythic'),
+    updatedAt: document.querySelector('.date-tip')?.innerText,
+    overall,
+    bisItemRaid,
+    bisItemMythic,
     trinkets: getTrinketsRank(),
   };
+
+  return data;
 }
 
 function getSlotLabel(key) {
@@ -129,7 +120,7 @@ function getItemIdByURL(url) {
     ?.split('item=')[1];
   return isNaN(Number(id)) ? null : Number(id);
 }
-function getBisItem(containerId) {
+async function getBisItem(containerId) {
   let itemDoms;
   if (containerId === '#overall-bis') {
     const overallBIS = document.querySelector('#guide-body tbody');
@@ -141,6 +132,45 @@ function getBisItem(containerId) {
   // 去除第一个列头的行
   const domArray = Array.from(itemDoms);
   domArray.shift();
+
+  async function mapItemInfo(dom) {
+    const tds = dom.querySelectorAll('td');
+    let itemId;
+    const columns = Array.from(tds).reduce((pre, cur, index) => {
+      if (index === 1 && cur.querySelector('a')) {
+        itemId = getItemIdByURL(cur.querySelector('a').href);
+        pre.push(cur.querySelector('a').innerText);
+      } else {
+        pre.push(cur.innerText);
+      }
+      return pre;
+    }, []);
+
+    const itemIcon = dom.querySelector('img')?.src?.split('/').pop() ?? '';
+
+    let itemName = columns[1].trim();
+    function isIncludeChineseText(text) {
+      return /[\u4e00-\u9fa5]/.test(text);
+    }
+    if (!isIncludeChineseText(itemName)) {
+      try {
+        itemName = await G_API.translateByBaidu(itemName);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    return {
+      slot: getSlotLabel(columns[0]),
+      item: itemName,
+      source: getSourceLabel(columns[2]),
+      id: itemId,
+      itemIcon,
+    };
+  }
+  const promises = domArray.map((dom) => mapItemInfo(dom));
+  const results = await Promise.allSettled(promises);
+  return results.map((result) => result.value);
 
   return domArray.map((dom) => {
     const tds = dom.querySelectorAll('td');

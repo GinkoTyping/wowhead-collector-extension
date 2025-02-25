@@ -203,6 +203,7 @@ function updatePopupView() {
         const { total, collected } = specs;
         console.log('Received from background:', { total, collected });
         insertBisDom(total, collected);
+        updateConfig();
         checkHasCollect();
       });
     } else if (tabs[0].url.includes('www.icy-veins.com/wow')) {
@@ -272,4 +273,3 @@ function insertGetTierList() {
 //#endregion
 
 updatePopupView();
-updateConfig();

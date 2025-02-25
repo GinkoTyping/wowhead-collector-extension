@@ -22,7 +22,8 @@
     },
     {
       "js": [
-        "scripts/content.js"
+        "scripts/content.js",
+        "scripts/content/api.js"
       ],
       "css": [
         "css/content.css"
