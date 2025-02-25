@@ -179,7 +179,6 @@ function getNextURL() {
 //#region
 
 function handlExport(request, _sender, sendResponse) {
-  return sendResponse(exportedData);
   return sendResponse(collectedData);
 }
 

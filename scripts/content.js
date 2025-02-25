@@ -86,7 +86,7 @@ function getSlotLabel(key) {
 
   return key;
 }
-function getSourceLabel(source) {
+async function getSourceLabel(source) {
   if (!source) {
     return { source: '/', isLoot: false };
   }
@@ -110,8 +110,15 @@ function getSourceLabel(source) {
     return { source: '海妖岛', isLoot: false };
   }
 
-  const output = source.replace(/[\|\/\(\)]/g, '');
-  return { source: output.replace(',,', ''), isLoot: true };
+  let output = source.replace(/[\|\/\(\)]/g, '').replace(',,', '');
+  const outputCache = {};
+  if (!isIncludeChineseText(output) && !outputCache[output]) {
+    const nameZH = await G_API.queryDungeonByName(output);
+    outputCache[output] = nameZH;
+    output = nameZH;
+  }
+
+  return { source: output, isLoot: true };
 }
 function getItemIdByURL(url) {
   const id = url
@@ -120,6 +127,11 @@ function getItemIdByURL(url) {
     ?.split('item=')[1];
   return isNaN(Number(id)) ? null : Number(id);
 }
+
+function isIncludeChineseText(text) {
+  return /[\u4e00-\u9fa5]/.test(text);
+}
+
 async function getBisItem(containerId) {
   let itemDoms;
   if (containerId === '#overall-bis') {
@@ -149,10 +161,8 @@ async function getBisItem(containerId) {
     const fullImageURL = dom.querySelector('img')?.src;
     const itemIcon = dom.querySelector('img')?.src?.split('/').pop() ?? '';
 
+    // PTR初期只有英文装备名称，需要翻译
     let itemName = columns[1].trim();
-    function isIncludeChineseText(text) {
-      return /[\u4e00-\u9fa5]/.test(text);
-    }
     if (!isIncludeChineseText(itemName)) {
       try {
         itemName = await G_API.translateByBaidu(itemName);
@@ -161,10 +171,13 @@ async function getBisItem(containerId) {
       }
     }
 
+    // PTR初期只有英文副本名称，需要翻译
+    const source = await getSourceLabel(columns[2]);
+
     return {
       slot: getSlotLabel(columns[0]),
       item: itemName,
-      source: getSourceLabel(columns[2]),
+      source,
       id: itemId,
       itemIcon,
       fullImageURL,
