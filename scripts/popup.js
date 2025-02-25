@@ -49,6 +49,32 @@ exportDataBtn.onclick = function () {
 
     // TODO: Maybe using local server to write files.
     saveAs(blob, 'spec-data.json');
+
+    function getItemImageURLs(data) {
+      return Object.values(data).reduce(
+        (pre, cur) => {
+          cur.forEach((spec) => {
+            ['overall', 'bisItemRaid', 'bisItemMythic'].forEach((bisType) => {
+              pre.items.push(...spec[bisType].map((item) => item.fullImageURL));
+            });
+            pre.trinkets.push(
+              ...spec.trinkets.reduce((output, tier) => {
+                output.push(...tier.trinkets.map((item) => item.fullImageURL));
+                return output;
+              }, [])
+            );
+          });
+
+          return pre;
+        },
+        { items: [], trinkets: [] }
+      );
+    }
+    const { items, trinkets } = getItemImageURLs(data);
+
+    // popup.html 中引入
+    downloadAsZip(items, 'items');
+    downloadAsZip(trinkets, 'trinkets');
   });
 };
 

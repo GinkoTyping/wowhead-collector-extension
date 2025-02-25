@@ -146,6 +146,7 @@ async function getBisItem(containerId) {
       return pre;
     }, []);
 
+    const fullImageURL = dom.querySelector('img')?.src;
     const itemIcon = dom.querySelector('img')?.src?.split('/').pop() ?? '';
 
     let itemName = columns[1].trim();
@@ -166,34 +167,15 @@ async function getBisItem(containerId) {
       source: getSourceLabel(columns[2]),
       id: itemId,
       itemIcon,
+      fullImageURL,
     };
   }
-  const promises = domArray.map((dom) => mapItemInfo(dom));
+
+  // TODO test
+  const promises = domArray.slice(0, 2).map((dom) => mapItemInfo(dom));
+
   const results = await Promise.allSettled(promises);
   return results.map((result) => result.value);
-
-  return domArray.map((dom) => {
-    const tds = dom.querySelectorAll('td');
-    let itemId;
-    const columns = Array.from(tds).reduce((pre, cur, index) => {
-      if (index === 1 && cur.querySelector('a')) {
-        itemId = getItemIdByURL(cur.querySelector('a').href);
-        pre.push(cur.querySelector('a').innerText);
-      } else {
-        pre.push(cur.innerText);
-      }
-      return pre;
-    }, []);
-
-    const itemIcon = dom.querySelector('img')?.src?.split('/').pop() ?? '';
-    return {
-      slot: getSlotLabel(columns[0]),
-      item: columns[1].trim(),
-      source: getSourceLabel(columns[2]),
-      id: itemId,
-      itemIcon,
-    };
-  });
 }
 
 function getStatPriority() {
@@ -250,6 +232,8 @@ function getTrinketsRank() {
         trinkets: Array.from(trinkets).map((item, index) => ({
           id: getItemIdByURL(url[index].href),
           image: getImageFileName(item.style.backgroundImage),
+          fullImageURL:
+            item.style.backgroundImage.match(/url\("([^"]*)"\)/)?.[1],
         })),
       };
     });
@@ -260,15 +244,17 @@ function getTrinketsRank() {
 
 //#region auto jump
 function checkAutoCollect() {
-  chrome.runtime.sendMessage({ action: 'queryConfig' }, (config) => {
+  chrome.runtime.sendMessage({ action: 'queryConfig' }, async (config) => {
     if (config.autoJump) {
       const currentTab = { url: window.location.href };
+      const data = await getData();
       chrome.runtime.sendMessage(
-        { action: 'save', currentTab, data: getData() },
+        { action: 'save', currentTab, data },
         (res) => {
           jumpCountDown(config.jumpInterval);
         }
       );
+      return true;
     }
   });
 }

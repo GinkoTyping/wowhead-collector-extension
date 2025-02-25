@@ -63,6 +63,7 @@
     {
       "resources": [
         "assets/FileSaver.min.js",
+        "assets/jszip.min.js",
         "export/spec-data.json"
       ],
       "matches": [
