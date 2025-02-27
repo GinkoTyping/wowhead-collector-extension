@@ -33,7 +33,10 @@ checkAutoCollect();
 //#region collecting data
 async function getData() {
   const overall = await getBisItem('#overall-bis');
+
+  // TODO: #bis-from-content-from-raid 奶僧 踏风 神圣 及其他发现的异常数据清洗
   const bisItemRaid = await getBisItem('#tab-bis-items-raid');
+
   const bisItemMythic = await getBisItem('#tab-bis-items-mythic');
   const data = {
     collectedAt: new Intl.DateTimeFormat('zh-CN', {
@@ -55,20 +58,29 @@ function getSlotLabel(key) {
   const lowerCaseKey = key.toLowerCase();
   const locales = {
     head: '头部',
+    helm: '头部',
     neck: '颈部',
     shoulders: '肩部',
+    shoulder: '肩部',
     cloak: '披风',
+    back: '披风',
     chest: '胸甲',
     wrist: '手腕',
     gloves: '手套',
+    hands: '手套',
+    waist: '腰带',
     belt: '腰带',
     legs: '腿部',
     boots: '脚部',
+    feets: '脚部',
+    feet: '脚部',
     ['alt (aoe)']: '饰品',
     ['alt (single)']: '饰品',
     weapon: '武器',
     ['main hand']: '主手',
+    ['main-hand']: '主手',
     ['off hand']: '副手',
+    ['off-hand']: '副手',
     offhand: '副手',
   };
 
@@ -80,13 +92,18 @@ function getSlotLabel(key) {
     return '饰品';
   }
 
-  if (lowerCaseKey.includes('ring')) {
+  if (lowerCaseKey.includes('ring') || lowerCaseKey.includes('finger')) {
     return '戒指';
   }
 
   return key;
 }
-async function getSourceLabel(source) {
+const dungeonNameCache = {};
+async function getSourceLabel(input) {
+  let source = input
+    .replace(/[\|\/\(\)]/g, '')
+    .replace(',,', '')
+    .trim();
   if (!source) {
     return { source: '/', isLoot: false };
   }
@@ -110,15 +127,17 @@ async function getSourceLabel(source) {
     return { source: '海妖岛', isLoot: false };
   }
 
-  let output = source.replace(/[\|\/\(\)]/g, '').replace(',,', '');
-  const outputCache = {};
-  if (!isIncludeChineseText(output) && !outputCache[output]) {
-    const nameZH = await G_API.queryDungeonByName(output);
-    outputCache[output] = nameZH;
-    output = nameZH;
+  if (!isIncludeChineseText(source)) {
+    if (dungeonNameCache[source]) {
+      source = dungeonNameCache[source];
+    } else {
+      const nameZH = await G_API.queryDungeonByName(source);
+      dungeonNameCache[source] = nameZH;
+      source = nameZH;
+    }
   }
 
-  return { source: output, isLoot: true };
+  return { source, isLoot: true };
 }
 function getItemIdByURL(url) {
   const id = url
@@ -132,6 +151,12 @@ function isIncludeChineseText(text) {
   return /[\u4e00-\u9fa5]/.test(text);
 }
 
+const translateLimiter = new Bottleneck({
+  // 百度翻译的API 只支持 10QPS
+  // minTime: 200,
+
+  maxConcurrent: 100,
+});
 async function getBisItem(containerId) {
   let itemDoms;
   if (containerId === '#overall-bis') {
@@ -139,6 +164,17 @@ async function getBisItem(containerId) {
     itemDoms = overallBIS.querySelectorAll('tr');
   } else {
     itemDoms = document.querySelectorAll(`${containerId} tbody tr`);
+    if (!itemDoms.length) {
+      let replaceSelector;
+      if (containerId.includes('raid')) {
+        replaceSelector = '#tab-bis-from-content-from-raid';
+      } else if (containerId.includes('mythic')) {
+        replaceSelector = '#tab-bis-from-content-from-mythic';
+      } else {
+        console.error(`Invalid selector: ${containerId}`);
+      }
+      itemDoms = document.querySelectorAll(`${replaceSelector} tbody tr`);
+    }
   }
 
   // 去除第一个列头的行
@@ -163,13 +199,13 @@ async function getBisItem(containerId) {
 
     // PTR初期只有英文装备名称，需要翻译
     let itemName = columns[1].trim();
-    if (!isIncludeChineseText(itemName)) {
-      try {
-        itemName = await G_API.translateByBaidu(itemName);
-      } catch (error) {
-        console.log(error);
-      }
-    }
+    // if (!isIncludeChineseText(itemName)) {
+    //   try {
+    //     itemName = await G_API.translateByBaidu(itemName);
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }
 
     // PTR初期只有英文副本名称，需要翻译
     const source = await getSourceLabel(columns[2]);
@@ -183,7 +219,6 @@ async function getBisItem(containerId) {
       fullImageURL,
     };
   }
-
   const promises = domArray.map((dom) => mapItemInfo(dom));
 
   const results = await Promise.allSettled(promises);
