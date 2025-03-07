@@ -82,6 +82,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       handleSaveNpcToSearch(request.data);
       toNextNpc(_sender.tab);
       break;
+
     case 'content_allow-translate-npc':
       sendResponse(npcToSearch?.length);
       break;
@@ -89,6 +90,14 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       console.log(`获取NPC数据${request.isSuccess ? '成功' : '失败'}`);
       toNextNpc(_sender.tab);
       break;
+
+    case 'content_allow-collect-npc':
+      sendResponse(doneNpcInDunegon.length);
+      break;
+    case 'content_to-next-npc-dungeon':
+      toNextNpcDungeon(_sender.tab);
+      break;
+
     default:
       break;
   }
@@ -236,12 +245,7 @@ function handleToNextSpell(request, _sender, sendResponse) {
 //#endregion
 
 //#region NPC
-const npcIndungeon = [
-  {
-    name: 'The MOTHERLODE!!',
-    id: '8064',
-  },
-];
+
 let npcToSearch;
 let npcCount = 0;
 let npcDoneCount = 0;
@@ -249,6 +253,7 @@ function getQueryNpcUrl(dungeonId) {
   return `https://www.wowhead.com/npcs/react-a:-1/react-h:-1?filter=6;${dungeonId};0`;
 }
 function handleSaveNpcToSearch(data) {
+  // TODO TEST
   npcToSearch = data;
   npcCount = npcToSearch.length;
 }
@@ -259,7 +264,59 @@ function toNextNpc(tab) {
     const url = `https://www.wowhead.com/cn/npc=${id}`;
     npcDoneCount++;
     console.log(
-      `当前NPC进度: ${npcDoneCount} / ${npcDoneCount}  ${JSON.stringify(npc)}`
+      `当前NPC进度: ${npcDoneCount} / ${npcCount}  ${JSON.stringify(npc)}`
+    );
+    handleJump({ currentTab: tab }, url);
+  }
+}
+
+const npcInDungeon = [
+  {
+    name: 'The MOTHERLODE!!',
+    id: '8064',
+  },
+  {
+    name: 'Theater of Pain',
+    id: '12841',
+  },
+  {
+    name: 'The Rookery',
+    id: '14938',
+  },
+  {
+    name: 'Priory of the Sacred Flame',
+    id: '14954',
+  },
+
+  {
+    name: 'Operation: Mechagon',
+    id: '10225',
+  },
+  {
+    name: 'Operation: Floodgate',
+    id: '15452',
+  },
+  {
+    name: 'Darkflame Cleft',
+    id: '14882',
+  },
+  {
+    name: 'Cinderbrew Meadery',
+    id: '15103',
+  },
+];
+let doneNpcInDunegon = [];
+function toNextNpcDungeon(tab) {
+  if (npcInDungeon.length) {
+    const dungeon = npcInDungeon.pop();
+    doneNpcInDunegon.push(dungeon);
+    const id = dungeon.id;
+    const url = `https://www.wowhead.com/npcs/react-a:-1/react-h:-1?filter=6;${id};0`;
+
+    console.log(
+      `当前NPC DUNGEON: ${doneNpcInDunegon.length} / ${
+        doneNpcInDunegon.length + npcInDungeon.length
+      }  ${JSON.stringify(dungeon)}`
     );
     handleJump({ currentTab: tab }, url);
   }

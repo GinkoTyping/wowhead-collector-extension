@@ -80,11 +80,23 @@ chrome.runtime.onMessage.addListener(async function (
   if (request.action == 'npc.collect') {
     await collect();
     chrome.runtime.sendMessage({
-      action: 'toNextNpcDungeon',
+      action: 'content_to-next-npc-dungeon',
     });
     return true;
   }
 });
+
+chrome.runtime.sendMessage(
+  { action: 'content_allow-collect-npc' },
+  async (isAllow) => {
+    if (isAllow) {
+      await collect();
+      chrome.runtime.sendMessage({
+        action: 'content_to-next-npc-dungeon',
+      });
+    }
+  }
+);
 
 function getNpcId() {
   return location.href.split('npc=').pop().split('/').shift();
