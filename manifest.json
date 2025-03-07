@@ -46,6 +46,17 @@
     },
     {
       "js": [
+        "scripts/content/wowhead-npc.js"
+      ],
+      "css": [
+        "css/content.css"
+      ],
+      "matches": [
+        "https://www.wowhead.com/npcs*"
+      ]
+    },
+    {
+      "js": [
         "scripts/content/icy-veins.js"
       ],
       "css": [

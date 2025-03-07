@@ -242,6 +242,8 @@ function updatePopupView() {
       });
     } else if (tabs[0].url.includes('www.icy-veins.com/wow')) {
       insertGetTierList();
+    } else if (tabs[0].url.includes('www.wowhead.com/npcs')) {
+      insertGetNPCButton();
     }
   });
 }
@@ -299,6 +301,29 @@ function insertGetTierList() {
       chrome.tabs.sendMessage(
         tabs[0].id,
         { action: 'collectTierList' },
+        (data) => {}
+      );
+    });
+  };
+}
+//#endregion
+
+//#region NPCs 名称 ID
+let collectNPCButton;
+function insertGetNPCButton() {
+  collectNPCButton = document.createElement('button');
+  collectNPCButton.id = 'collect-npc';
+  collectNPCButton.innerText = '获取NPC数据';
+  document.querySelector('.content').append(collectNPCButton);
+  collectNPCButton.onclick = function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.runtime.sendMessage({
+        action: 'updateWindowId',
+        windowId: tabs[0].windowId,
+      });
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { action: 'npc.collect' },
         (data) => {}
       );
     });

@@ -223,3 +223,15 @@ function handleToNextSpell(request, _sender, sendResponse) {
   }
 }
 //#endregion
+
+//#region NPC
+const npcIndungeon = [
+  {
+    name: 'The MOTHERLODE!!',
+    id: '8064',
+  },
+];
+function getQueryNpcUrl(dungeonId) {
+  return `https://www.wowhead.com/npcs/react-a:-1/react-h:-1?filter=6;${dungeonId};0`;
+}
+//#endregion
