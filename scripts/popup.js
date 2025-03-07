@@ -244,6 +244,8 @@ function updatePopupView() {
       insertGetTierList();
     } else if (tabs[0].url.includes('www.wowhead.com/npcs')) {
       insertGetNPCButton();
+    } else if (tabs[0].url.includes('www.wowhead.com/cn/npc')) {
+      insertTranslateNpcButton();
     }
   });
 }
@@ -313,7 +315,7 @@ let collectNPCButton;
 function insertGetNPCButton() {
   collectNPCButton = document.createElement('button');
   collectNPCButton.id = 'collect-npc';
-  collectNPCButton.innerText = '获取NPC数据';
+  collectNPCButton.innerText = '获取NPC';
   document.querySelector('.content').append(collectNPCButton);
   collectNPCButton.onclick = function () {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -324,6 +326,26 @@ function insertGetNPCButton() {
       chrome.tabs.sendMessage(
         tabs[0].id,
         { action: 'npc.collect' },
+        (data) => {}
+      );
+    });
+  };
+}
+let translateNpcButton;
+function insertTranslateNpcButton() {
+  translateNpcButton = document.createElement('button');
+  translateNpcButton.id = 'collect-npc';
+  translateNpcButton.innerText = '翻译NPC';
+  document.querySelector('.content').append(translateNpcButton);
+  translateNpcButton.onclick = function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.runtime.sendMessage({
+        action: 'updateWindowId',
+        windowId: tabs[0].windowId,
+      });
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { action: 'npc.translate' },
         (data) => {}
       );
     });

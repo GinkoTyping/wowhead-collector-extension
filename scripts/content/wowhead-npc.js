@@ -1,16 +1,3 @@
-chrome.runtime.onMessage.addListener(async function (
-  request,
-  sender,
-  sendResponse
-) {
-  if (request.action == 'npc.collect') {
-    main();
-    chrome.runtime.sendMessage({
-      action: 'toNextNpcDungeon',
-    });
-  }
-});
-
 function getDungeonId() {
   const arr = location.href.split(';');
   arr.pop();
@@ -57,24 +44,27 @@ function collectTable(dungeonName) {
     return pre;
   }, []);
 }
-
 async function updateNpcInDb(npc) {
-  const res = await fetch(`http://localhost:3000/api/wow/npc/${npc.id}`);
-  const options = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/JSON',
-    },
-    body: JSON.stringify({ ...npc, name_en: npc.name }),
-  };
-  if (res.status === 200) {
-    await fetch('http://localhost:3000/api/wow/npc/update', options);
-  } else {
-    await fetch('http://localhost:3000/api/wow/npc/add', options);
+  try {
+    const res = await fetch(`http://localhost:3000/api/wow/npc/${npc.id}`);
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/JSON',
+      },
+      body: JSON.stringify({ ...npc, name_en: npc.name }),
+    };
+    if (res.status === 200) {
+      await fetch('http://localhost:3000/api/wow/npc/update', options);
+    } else {
+      await fetch('http://localhost:3000/api/wow/npc/add', options);
+    }
+    return true;
+  } catch (error) {
+    return false;
   }
 }
-
-async function main() {
+async function collect() {
   const dungeonId = getDungeonId();
   const dungeonName = getDunegonName(dungeonId);
 
@@ -82,3 +72,63 @@ async function main() {
   await Promise.allSettled(npcs.map((item) => updateNpcInDb(item)));
   console.log({ npcs });
 }
+chrome.runtime.onMessage.addListener(async function (
+  request,
+  sender,
+  sendResponse
+) {
+  if (request.action == 'npc.collect') {
+    await collect();
+    chrome.runtime.sendMessage({
+      action: 'toNextNpcDungeon',
+    });
+    return true;
+  }
+});
+
+function getNpcId() {
+  return location.href.split('npc=').pop().split('/').shift();
+}
+async function getNpcToTranslate() {
+  const res = await fetch('http://localhost:3000/api/wow/npc/translate');
+  const data = await res.json();
+  return data;
+}
+chrome.runtime.onMessage.addListener(async function (
+  request,
+  sender,
+  sendResponse
+) {
+  if (request.action == 'npc.translate') {
+    const data = await getNpcToTranslate();
+    chrome.runtime.sendMessage({
+      action: 'saveNpcToSearch',
+      data,
+    });
+    return true;
+  }
+});
+
+async function translate() {
+  chrome.runtime.sendMessage(
+    { action: 'content_allow-translate-npc' },
+    async (isAllow) => {
+      if (isAllow) {
+        let isSuccess;
+        try {
+          const name = document.querySelector('.heading-size-1').innerText;
+          const id = getNpcId();
+          isSuccess = await updateNpcInDb({ id, name_zh: name });
+        } catch (error) {
+          console.log(error);
+        } finally {
+          chrome.runtime.sendMessage({
+            action: 'content_to-next-npc',
+            isSuccess,
+          });
+        }
+      }
+    }
+  );
+}
+translate();

@@ -78,6 +78,17 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     case 'getSpellsToSearch':
       sendResponse(spellToSearch);
       break;
+    case 'saveNpcToSearch':
+      handleSaveNpcToSearch(request.data);
+      toNextNpc(_sender.tab);
+      break;
+    case 'content_allow-translate-npc':
+      sendResponse(npcToSearch?.length);
+      break;
+    case 'content_to-next-npc':
+      console.log(`获取NPC数据${request.isSuccess ? '成功' : '失败'}`);
+      toNextNpc(_sender.tab);
+      break;
     default:
       break;
   }
@@ -231,7 +242,26 @@ const npcIndungeon = [
     id: '8064',
   },
 ];
+let npcToSearch;
+let npcCount = 0;
+let npcDoneCount = 0;
 function getQueryNpcUrl(dungeonId) {
   return `https://www.wowhead.com/npcs/react-a:-1/react-h:-1?filter=6;${dungeonId};0`;
+}
+function handleSaveNpcToSearch(data) {
+  npcToSearch = data;
+  npcCount = npcToSearch.length;
+}
+function toNextNpc(tab) {
+  if (npcToSearch.length) {
+    const npc = npcToSearch.pop();
+    const id = npc.id;
+    const url = `https://www.wowhead.com/cn/npc=${id}`;
+    npcDoneCount++;
+    console.log(
+      `当前NPC进度: ${npcDoneCount} / ${npcDoneCount}  ${JSON.stringify(npc)}`
+    );
+    handleJump({ currentTab: tab }, url);
+  }
 }
 //#endregion

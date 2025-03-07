@@ -18,7 +18,6 @@ async function tryCollectData() {
   chrome.runtime.sendMessage(
     { action: 'getSpellsToSearch' },
     async (spellsToSearch) => {
-
       // 初始化前， spellsToSearch为null，避免初始化前就触发
       if (spellsToSearch) {
         let response;

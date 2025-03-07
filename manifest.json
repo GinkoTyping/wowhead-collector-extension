@@ -52,7 +52,8 @@
         "css/content.css"
       ],
       "matches": [
-        "https://www.wowhead.com/npcs*"
+        "https://www.wowhead.com/npcs*",
+        "https://www.wowhead.com/cn/npc*"
       ]
     },
     {
