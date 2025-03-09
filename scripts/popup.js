@@ -231,7 +231,10 @@ function updatePopupView() {
     console.log(tabs[0].url);
     if (tabs[0].url.includes('www.wowhead.com/cn/spell')) {
       insertSpellDom();
-    } else if (tabs[0].url.includes('www.wowhead.com/cn/guide')) {
+    } else if (
+      tabs[0].url.includes('www.wowhead.com/cn/guide') &&
+      tabs[0].url.includes('bis-gear')
+    ) {
       chrome.runtime.sendMessage({ action: 'querySpecs' }, (specs) => {
         collectionInfo = specs;
         const { total, collected } = specs;
@@ -246,6 +249,11 @@ function updatePopupView() {
       insertGetNPCButton();
     } else if (tabs[0].url.includes('www.wowhead.com/cn/npc')) {
       insertTranslateNpcButton();
+    } else if (
+      tabs[0].url.includes('www.wowhead.com/cn/guide') &&
+      tabs[0].url.includes('stat-priority')
+    ) {
+      insertGetStatButton();
     }
   });
 }
@@ -348,6 +356,25 @@ function insertTranslateNpcButton() {
         { action: 'npc.translate' },
         (data) => {}
       );
+    });
+  };
+}
+//#endregion
+
+//#region
+let getStatButton;
+function insertGetStatButton() {
+  getStatButton = document.createElement('button');
+  getStatButton.id = 'collect-stat';
+  getStatButton.innerText = '获取属性优先级';
+  document.querySelector('.content').append(getStatButton);
+  getStatButton.onclick = function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.runtime.sendMessage({
+        action: 'updateWindowId',
+        windowId: tabs[0].windowId,
+      });
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'stat.get' }, (data) => {});
     });
   };
 }

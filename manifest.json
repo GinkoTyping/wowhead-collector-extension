@@ -35,6 +35,17 @@
     },
     {
       "js": [
+        "scripts/content/wowhead-stat.js"
+      ],
+      "css": [
+        "css/content.css"
+      ],
+      "matches": [
+        "https://www.wowhead.com/cn/guide/*/stat-priority*"
+      ]
+    },
+    {
+      "js": [
         "scripts/content/wowhead-spell.js"
       ],
       "css": [
