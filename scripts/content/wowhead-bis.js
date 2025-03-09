@@ -1,3 +1,5 @@
+console.log('BIS CONTENT 注入');
+
 // Collect data
 chrome.runtime.onMessage.addListener(async function (
   request,

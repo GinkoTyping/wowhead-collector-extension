@@ -23,14 +23,14 @@
     {
       "js": [
         "assets/light.min.js",
-        "scripts/content.js",
+        "scripts/content/wowhead-bis.js",
         "scripts/content/api.js"
       ],
       "css": [
         "css/content.css"
       ],
       "matches": [
-        "https://www.wowhead.com/cn/guide/*"
+        "https://www.wowhead.com/cn/guide/*/bis-gear"
       ]
     },
     {
