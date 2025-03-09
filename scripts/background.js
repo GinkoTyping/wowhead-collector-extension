@@ -98,6 +98,14 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       toNextNpcDungeon(_sender.tab);
       break;
 
+    case 'content_to-next-stat-page':
+      updateStatData(request.data);
+      toNextStatPage(request, _sender.tab, sendResponse);
+      break;
+    case 'content_allow-collect-stat':
+      sendResponse(colloectedStat.length);
+      break;
+
     default:
       break;
   }
@@ -321,4 +329,87 @@ function toNextNpcDungeon(tab) {
     handleJump({ currentTab: tab }, url);
   }
 }
+//#endregion
+
+//#region 属性优先级
+let colloectedStat = [];
+let collectStatData = [];
+const totalStatCount = URLS_ENTRIES.reduce((pre, [key, value]) => {
+  pre += value.length;
+  return pre;
+}, 0);
+function getStatUrl() {
+  let curClass;
+  let curSpec;
+  Object.entries(URLS).some(([key, value]) => {
+    const specToCollect = value.find(
+      (spec) => !colloectedStat.includes(`${key}|${spec}`)
+    );
+    if (specToCollect) {
+      curClass = key;
+      curSpec = specToCollect;
+      return true;
+    }
+    return false;
+  });
+
+  if (!curClass || !curSpec) {
+    return '';
+  }
+
+  let suffix;
+  const tanks = [
+    'death-knight|blood',
+    'druid|guardian',
+    'monk|brewmaster',
+    'demon-hunter|vengeance',
+    'paladin|protection',
+    'warrior|protection',
+  ];
+  const healers = [
+    'druid|restoration',
+    'monk|mistweaver',
+    'paladin|holy',
+    'shaman|restoration',
+    'evoker|preservation',
+    'priest|holy',
+    'priest|discipline',
+  ];
+  if (tanks.includes(`${curClass}|${curSpec}`)) {
+    suffix = 'tank';
+  } else if (healers.includes(`${curClass}|${curSpec}`)) {
+    suffix = 'healer';
+  } else {
+    suffix = 'dps';
+  }
+
+  console.log(`已采集属性优先级：${colloectedStat.length} / ${totalStatCount}`);
+
+  return `https://www.wowhead.com/cn/guide/classes/${curClass}/${curSpec}/stat-priority-pve-${suffix}`;
+}
+function updateStatData(newItem) {
+  const existedIndex = collectStatData.findIndex(
+    (item) =>
+      item.roleClass === newItem.roleClass &&
+      item.classSpec === newItem.classSpec
+  );
+  if (existedIndex === -1) {
+    collectStatData.push(newItem);
+  } else {
+    collectStatData.splice(existedIndex, 1, newItem);
+  }
+  console.log({ collectStatData });
+}
+function toNextStatPage(request, tab, sendResponse) {
+  colloectedStat.push(`${request.data.roleClass}|${request.data.classSpec}`);
+
+  const url = getStatUrl();
+  if (url) {
+    handleJump({ currentTab: tab }, url);
+  } else {
+    console.log('采集属性结束。');
+    sendResponse(collectStatData);
+  }
+}
+
 //#endregion

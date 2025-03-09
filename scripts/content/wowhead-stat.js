@@ -1,19 +1,8 @@
 console.log('STAT CONTENT 注入');
-chrome.runtime.onMessage.addListener(async function (
-  request,
-  sender,
-  sendResponse
-) {
-  if (request.action == 'stat.get') {
-    const overview = getStatsOverview();
-    const best = getBestStats();
-    console.log({ overview, best });
-  }
-});
 
 function getStatsOverview() {
   function getEle() {
-    const reference = document.querySelector('#stats-overview');
+    const reference = document.querySelector('.guide-content h2');
     let output = reference.nextSibling;
     while (output.tagName !== 'UL') {
       output = output.nextSibling;
@@ -37,7 +26,6 @@ function getStatsOverview() {
     };
   });
 }
-
 function getBestStats() {
   function getEle() {
     const reference = document.querySelector('#best-stats');
@@ -57,9 +45,10 @@ function getBestStats() {
     const dictionary = {
       strength: '力量',
       haste: '急速',
-      master: '精通',
-      crit: '暴击',
+      mastery: '精通',
+      'critical strike': '暴击',
       critical: '暴击',
+      crit: '暴击',
       versatility: '全能',
       intellect: '智力',
       agility: '敏捷',
@@ -123,11 +112,19 @@ function getBestStats() {
       'Fel-Scarred': '邪痕枭雄',
     };
 
-    return map[lowerCaseKey];
+    return map[lowerCaseKey] ?? key;
   }
 
   return Array.from(bestStatsEle.children).map((parentEl) => {
-    const name = parentEl.children[0].querySelector('b span').innerText;
+    let name;
+    Array.from(parentEl.children[0].querySelectorAll('b span')).some(item => {
+      // 个别情况 存在多个 b span， 英雄天赋的span设置了字体颜色
+      if (item.style.color?.length) {
+        name = item.innerText;
+      }
+    })
+
+    // const name = parentEl.children[0].querySelector('b span').innerText;
     const priorityList = Array.from(parentEl.querySelectorAll('ol li')).map(
       (item) => mapLocaleStat(item.innerText)
     );
@@ -138,3 +135,53 @@ function getBestStats() {
     };
   });
 }
+function getClassAndSpec() {
+  const arr = location.href
+    .split('https://www.wowhead.com/cn/guide/classes/')
+    .pop()
+    .split('/');
+  return { roleClass: arr[0], classSpec: arr[1] };
+}
+function collect() {
+  const { roleClass, classSpec } = getClassAndSpec();
+  const overview = getStatsOverview();
+  const best = getBestStats();
+  console.log({ roleClass, classSpec, overview, best });
+
+  chrome.runtime.sendMessage(
+    {
+      action: 'content_to-next-stat-page',
+      data: {
+        roleClass,
+        classSpec,
+        overview,
+        best,
+      },
+    },
+    (res) => {
+      if (res) {
+        const jsonData = JSON.stringify(res, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        saveAs(blob, 'stat-priority.json');
+      }
+    }
+  );
+}
+chrome.runtime.onMessage.addListener(async function (
+  request,
+  sender,
+  sendResponse
+) {
+  if (request.action == 'stat.get') {
+    collect();
+  }
+});
+
+chrome.runtime.sendMessage(
+  { action: 'content_allow-collect-stat' },
+  async (isAllow) => {
+    if (isAllow) {
+      collect();
+    }
+  }
+);

@@ -35,7 +35,8 @@
     },
     {
       "js": [
-        "scripts/content/wowhead-stat.js"
+        "scripts/content/wowhead-stat.js",
+        "assets/FileSaver.min.js"
       ],
       "css": [
         "css/content.css"
