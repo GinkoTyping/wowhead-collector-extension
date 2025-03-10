@@ -388,6 +388,12 @@ function getStatUrl() {
   return `https://www.wowhead.com/cn/guide/classes/${curClass}/${curSpec}/stat-priority-pve-${suffix}`;
 }
 function updateStatData(newItem) {
+  if (!newItem.best.length) {
+    console.log(
+      `${newItem.classSpec}${newItem.roleClass} 请手动适配属性优先级`
+    );
+  }
+
   const existedIndex = collectStatData.findIndex(
     (item) =>
       item.roleClass === newItem.roleClass &&
@@ -396,7 +402,16 @@ function updateStatData(newItem) {
   if (existedIndex === -1) {
     collectStatData.push(newItem);
   } else {
-    collectStatData.splice(existedIndex, 1, newItem);
+    if (newItem.best.length) {
+      collectStatData.splice(existedIndex, 1, newItem);
+
+      // best为空的不采集，手动适配
+    } else {
+      collectStatData.splice(existedIndex, 1, {
+        ...newItem,
+        best: collectStatData.best,
+      });
+    }
   }
   console.log({ collectStatData });
 }
@@ -408,6 +423,10 @@ function toNextStatPage(request, tab, sendResponse) {
     handleJump({ currentTab: tab }, url);
   } else {
     console.log('采集属性结束。');
+    const emptyBestStats = collectStatData
+      .filter((item) => !item.best.length)
+      .map((item) => `${item.classSpec} ${item.roleClass}`).join(',');
+    console.log(`以下专精的最佳副属性为空：${emptyBestStats}`);
     sendResponse(collectStatData);
   }
 }
