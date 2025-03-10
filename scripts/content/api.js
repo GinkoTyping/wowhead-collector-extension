@@ -1,6 +1,10 @@
 const G_API = {
   translateByBaidu,
   queryDungeonByName,
+  queryUpdateSpell,
+  queryBlankSpell,
+  queryNpcById,
+  queryAddOrUpdateNpc,
 };
 async function translateByBaidu(text) {
   try {
@@ -46,4 +50,40 @@ async function queryDungeonByName(nameEN) {
       return `${nameEN}(团本)`;
     }
   }
+}
+
+async function queryUpdateSpell(spellData) {
+  return fetch('http://localhost:3000/api/wow/spell/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${GINKO_AUTH_TOKEN}`,
+    },
+    body: JSON.stringify(spellData),
+  });
+}
+
+async function queryBlankSpell() {
+  const response = await fetch('http://localhost:3000/api/wow/spell/blank');
+  const data = await response.json();
+  return data;
+}
+
+async function queryNpcById(id) {
+  return fetch(`http://localhost:3000/api/wow/npc/${id}`);
+}
+
+async function queryAddOrUpdateNpc(npc, isUpdate) {
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/JSON',
+      Authorization: `Bearer ${GINKO_AUTH_TOKEN}`,
+    },
+    body: JSON.stringify({ ...npc, name_en: npc.name }),
+  };
+  return fetch(
+    `http://localhost:3000/api/wow/npc/${isUpdate ? 'update' : 'add'}`,
+    options
+  );
 }

@@ -47,6 +47,8 @@
     },
     {
       "js": [
+        "scripts/content/api.js",
+        "scripts/auth/index.js",
         "scripts/content/wowhead-spell.js"
       ],
       "css": [
@@ -58,6 +60,8 @@
     },
     {
       "js": [
+        "scripts/auth/index.js",
+        "scripts/content/api.js",
         "scripts/content/wowhead-npc.js"
       ],
       "css": [

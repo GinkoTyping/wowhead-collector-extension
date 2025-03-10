@@ -115,20 +115,29 @@ function getBestStats() {
 
         'Aldrachi Reaver': '奥达奇收割者',
         'Fel-Scarred': '邪痕枭雄',
+
+        Scalecommander: '鳞长',
+        Flameshaper: '塑焰者',
+        Chronowarden: '时空守卫',
       };
 
       return map[lowerCaseKey] ?? key;
     }
     return Array.from(bestStatsEle.children).map((parentEl) => {
       let name;
-      Array.from(parentEl.children[0].querySelectorAll('b span')).some(
-        (item) => {
-          // 个别情况 存在多个 b span， 英雄天赋的span设置了字体颜色
-          if (item.style.color?.length) {
-            name = item.innerText;
+      const allSpan = Array.from(parentEl.children[0].querySelectorAll('b span'));
+      if (allSpan.length > 1) {
+        allSpan.some(
+          (item) => {
+            // 个别情况 存在多个 b span， 英雄天赋的span设置了字体颜色
+            if (item.style.color?.length) {
+              name = item.innerText;
+            }
           }
-        }
-      );
+        );
+      } else {
+        name = allSpan[0].innerText;
+      }
 
       // const name = parentEl.children[0].querySelector('b span').innerText;
       const priorityList = Array.from(parentEl.querySelectorAll('ol li')).map(

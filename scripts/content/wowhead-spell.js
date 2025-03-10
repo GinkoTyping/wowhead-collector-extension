@@ -4,8 +4,7 @@ chrome.runtime.onMessage.addListener(async function (
   sendResponse
 ) {
   if (request.action == 'querySpells') {
-    const response = await fetch('http://localhost:3000/api/wow/spell/blank');
-    const data = await response.json();
+    const data = await G_API.queryBlankSpell();
     chrome.runtime.sendMessage({
       action: 'saveSpellToSearch',
       data,
@@ -25,13 +24,7 @@ async function tryCollectData() {
         let error = null;
         try {
           spellData = getSpellData();
-          response = await fetch('http://localhost:3000/api/wow/spell/update', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(spellData),
-          });
+          response = await G_API.queryUpdateSpell(spellData);
         } catch (e) {
           error = e;
         } finally {

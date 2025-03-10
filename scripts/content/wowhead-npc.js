@@ -46,19 +46,8 @@ function collectTable(dungeonName) {
 }
 async function updateNpcInDb(npc) {
   try {
-    const res = await fetch(`http://localhost:3000/api/wow/npc/${npc.id}`);
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/JSON',
-      },
-      body: JSON.stringify({ ...npc, name_en: npc.name }),
-    };
-    if (res.status === 200) {
-      await fetch('http://localhost:3000/api/wow/npc/update', options);
-    } else {
-      await fetch('http://localhost:3000/api/wow/npc/add', options);
-    }
+    const res = await G_API.queryNpcById(npc.id);
+    await G_API.queryAddOrUpdateNpc(npc, res.status === 200);
     return true;
   } catch (error) {
     return false;
