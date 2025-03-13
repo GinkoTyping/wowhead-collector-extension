@@ -60,6 +60,19 @@
     },
     {
       "js": [
+        "scripts/content/api.js",
+        "scripts/auth/index.js",
+        "scripts/content/wowhead-item.js"
+      ],
+      "css": [
+        "css/content.css"
+      ],
+      "matches": [
+        "https://www.wowhead.com/cn/item*"
+      ]
+    },
+    {
+      "js": [
         "scripts/auth/index.js",
         "scripts/content/api.js",
         "scripts/content/wowhead-npc.js"

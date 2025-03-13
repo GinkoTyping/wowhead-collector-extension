@@ -254,6 +254,8 @@ function updatePopupView() {
       tabs[0].url.includes('stat-priority')
     ) {
       insertGetStatButton();
+    } else if (tabs[0].url.includes('www.wowhead.com/cn/item')) {
+      insertGetItemButton();
     }
   });
 }
@@ -361,7 +363,7 @@ function insertTranslateNpcButton() {
 }
 //#endregion
 
-//#region
+//#region 获取BIS属性
 let getStatButton;
 function insertGetStatButton() {
   getStatButton = document.createElement('button');
@@ -380,4 +382,22 @@ function insertGetStatButton() {
 }
 //#endregion
 
+//#region 装备物品
+let getItemButton;
+function insertGetItemButton() {
+  getItemButton = document.createElement('button');
+  getItemButton.id = 'collect-stat';
+  getItemButton.innerText = '获取装备信息';
+  document.querySelector('.content').append(getItemButton);
+  getItemButton.onclick = function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.runtime.sendMessage({
+        action: 'updateWindowId',
+        windowId: tabs[0].windowId,
+      });
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'item.get' }, (data) => {});
+    });
+  };
+}
+//#endregion
 updatePopupView();

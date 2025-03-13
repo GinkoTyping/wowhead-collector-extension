@@ -67,6 +67,20 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     case 'updateWindowId':
       handleUpdateWindowId(request, _sender, sendResponse);
       break;
+
+    case 'saveItemToSearch':
+      // TODO
+      itemToSearch = request.data;
+      handleToNextItem(request, _sender, sendResponse);
+      break;
+    case 'toNextItem':
+      handleLogSpellAction({ ...request, spellData: request.data });
+      handleToNextItem(request, _sender, sendResponse);
+      break;
+    case 'getItemsToSearch':
+      sendResponse(itemToSearch);
+      break;
+
     case 'saveSpellToSearch':
       spellToSearch = request.data;
       handleToNextSpell(request, _sender, sendResponse);
@@ -425,10 +439,31 @@ function toNextStatPage(request, tab, sendResponse) {
     console.log('采集属性结束。');
     const emptyBestStats = collectStatData
       .filter((item) => !item.best.length)
-      .map((item) => `${item.classSpec} ${item.roleClass}`).join(',');
+      .map((item) => `${item.classSpec} ${item.roleClass}`)
+      .join(',');
     console.log(`以下专精的最佳副属性为空：${emptyBestStats}`);
     sendResponse(collectStatData);
   }
 }
 
+//#endregion
+
+//#region 装备
+let itemToSearch;
+let itemDoneCount = 0;
+function getItemUrl(id) {
+  return `https://www.wowhead.com/cn/item=${id}`;
+}
+function handleToNextItem(request, _sender, sendResponse) {
+  if (itemToSearch.length) {
+    const item = itemToSearch.shift();
+    itemDoneCount++;
+    console.log(
+      `当前SPELL进度: ${itemDoneCount} / ${
+        itemToSearch.length + itemDoneCount
+      }  ${JSON.stringify(item)}`
+    );
+    handleJump({ currentTab: _sender.tab }, getItemUrl(item.id));
+  }
+}
 //#endregion

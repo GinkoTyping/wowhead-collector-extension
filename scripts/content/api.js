@@ -5,6 +5,8 @@ const G_API = {
   queryBlankSpell,
   queryNpcById,
   queryAddOrUpdateNpc,
+  queryBlankSourceItem,
+  queryUpdateItem,
 };
 async function translateByBaidu(text) {
   try {
@@ -24,23 +26,23 @@ async function translateByBaidu(text) {
 }
 
 const raidBossMap = {
-  'vexie': '维克茜和磨轮',
-  'cauldron': '血腥大熔炉',
-  'reverb': '里克·混响',
-  'stix': '斯提克斯·堆渣',
-  'sprocketmonger': '链齿狂人洛肯斯多',
-  'bandit': '独臂盗匪',
-  'mug': '穆格·兹伊，安保头子',
-  'chrome': '铬武大王加里维克斯',
-}
+  vexie: '维克茜和磨轮',
+  cauldron: '血腥大熔炉',
+  reverb: '里克·混响',
+  stix: '斯提克斯·堆渣',
+  sprocketmonger: '链齿狂人洛肯斯多',
+  bandit: '独臂盗匪',
+  mug: '穆格·兹伊，安保头子',
+  chrome: '铬武大王加里维克斯',
+};
 function mapRaidBossName(name) {
   let lowerCaseName = name.toLowerCase();
-  let bossName = `${name}(团本)`
-  Object.keys(raidBossMap).some(key => {
+  let bossName = `${name}(团本)`;
+  Object.keys(raidBossMap).some((key) => {
     if (lowerCaseName.includes(key)) {
       bossName = raidBossMap[key];
     }
-  })
+  });
   return bossName;
 }
 
@@ -107,4 +109,23 @@ async function queryAddOrUpdateNpc(npc, isUpdate) {
     `http://localhost:3000/api/wow/npc/${isUpdate ? 'update' : 'add'}`,
     options
   );
+}
+
+async function queryBlankSourceItem() {
+  const response = await fetch(
+    'http://localhost:3000/api/wow/item/blank-source'
+  );
+  const data = await response.json();
+  return data;
+}
+
+async function queryUpdateItem(itemData) {
+  return fetch('http://localhost:3000/api/wow/item/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${GINKO_AUTH_TOKEN}`,
+    },
+    body: JSON.stringify(itemData),
+  });
 }
