@@ -79,6 +79,7 @@ function getSlotLabel(key) {
     ['alt (aoe)']: '饰品',
     ['alt (single)']: '饰品',
     weapon: '武器',
+    shield: '盾牌',
     ['main hand']: '主手',
     ['main-hand']: '主手',
     ['off hand']: '副手',
@@ -128,8 +129,11 @@ async function getSourceLabel(input) {
   if (source.toLowerCase().includes('siren')) {
     return { source: '海妖岛', isLoot: false };
   }
+  if (source.toLowerCase().includes('delves')) {
+    return { source: '地下堡', isLoot: false };
+  }
 
-  if (!isIncludeChineseText(source)) {
+  if (!isIncludeChineseText(source) || source.includes('解放安德麦')) {
     if (dungeonNameCache[source]) {
       source = dungeonNameCache[source];
     } else {
