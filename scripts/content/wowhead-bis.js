@@ -51,9 +51,29 @@ async function getData() {
     bisItemRaid,
     bisItemMythic,
     trinkets: getTrinketsRank(),
+    advice: getChipAdivce(),
   };
-
   return data;
+}
+
+function getChipAdivce() {
+  const container = document.querySelector('#puzzling-cartel-chips');
+  let olEle = container.nextSibling;
+  while (olEle.tagName !== 'OL') {
+    olEle = olEle.nextSibling;
+  }
+  return Array.from(olEle.childNodes)
+    .map((liEle) => {
+      const href = liEle.querySelector('a[data-type=item]')?.href ?? '';
+      return Number(
+        href
+          .split('/')
+          .find((item) => item.includes('item='))
+          ?.split('=')
+          .pop()
+      );
+    })
+    .filter((item) => item);
 }
 
 function getSlotLabel(key) {
@@ -149,7 +169,9 @@ function getItemIdByURL(url) {
   const id = url
     .split('/')
     .find((item) => item.includes('item='))
-    ?.split('item=')[1];
+    ?.split('item=')[1]
+    .split('?')
+    .shift();
   return isNaN(Number(id)) ? null : Number(id);
 }
 
