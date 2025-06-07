@@ -61,6 +61,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       break;
     case 'queryConfig':
       handleQueryConfig(request, _sender, sendResponse);
+      break;
     case 'updateConfig':
       handleUpdateConfig(request, _sender, sendResponse);
       break;
@@ -83,6 +84,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 
     case 'saveSpellToSearch':
       spellToSearch = request.data;
+      version = request.version;
       handleToNextSpell(request, _sender, sendResponse);
       break;
     case 'toNextSpell':
@@ -241,7 +243,11 @@ function handleUpdateConfig(request, _sender, sendResponse) {
 //#region 技能数据
 let spellToSearch;
 let spellDoneCount = 0;
+let version;
 function getSpellUrl(spellId) {
+  if (version) {
+    return `https://www.wowhead.com/${version}/cn/spell=${spellId}`;
+  }
   return `https://www.wowhead.com/cn/spell=${spellId}`;
 }
 

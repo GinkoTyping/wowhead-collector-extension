@@ -86,8 +86,8 @@ async function queryUpdateSpell(spellData) {
   });
 }
 
-async function queryBlankSpell() {
-  const response = await fetch('http://localhost:3000/api/wow/spell/blank');
+async function queryBlankSpell(version) {
+  const response = await fetch(`http://localhost:3000/api/wow/spell/blank?version=${version}`);
   const data = await response.json();
   return data;
 }

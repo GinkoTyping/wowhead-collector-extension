@@ -81,8 +81,8 @@ exportDataBtn.onclick = function () {
     const { items, trinkets } = getItemImageURLs(data);
 
     // popup.html 中引入
-    downloadAsZip(items, 'items');
-    downloadAsZip(trinkets, 'trinkets');
+    // downloadAsZip(items, 'items');
+    // downloadAsZip(trinkets, 'trinkets');
   });
 };
 
@@ -229,7 +229,7 @@ function checkHasCollect() {
 function updatePopupView() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     console.log(tabs[0].url);
-    if (tabs[0].url.includes('www.wowhead.com/cn/spell')) {
+    if (tabs[0].url.includes('www.wowhead.com/cn/spell') || tabs[0].url.includes('www.wowhead.com/wotlk/cn/spell')) {
       insertSpellDom();
     } else if (
       tabs[0].url.includes('www.wowhead.com/cn/guide') &&
@@ -289,7 +289,9 @@ function insertSpellDom() {
       });
       chrome.tabs.sendMessage(
         tabs[0].id,
-        { action: 'querySpells' },
+        { action: 'querySpells',
+          version: tabs[0].url.includes('www.wowhead.com/wotlk/cn/spell') ? 'wotlk' : ''
+        },
         (data) => {}
       );
     });

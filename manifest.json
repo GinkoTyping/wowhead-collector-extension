@@ -55,7 +55,8 @@
         "css/content.css"
       ],
       "matches": [
-        "https://www.wowhead.com/cn/spell*"
+        "https://www.wowhead.com/cn/spell*",
+        "https://www.wowhead.com/wotlk/cn/spell*"
       ]
     },
     {

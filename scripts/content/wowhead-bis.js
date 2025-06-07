@@ -4,7 +4,7 @@ console.log('BIS CONTENT 注入');
 chrome.runtime.onMessage.addListener(async function (
   request,
   sender,
-  sendResponse
+  sendResponse,
 ) {
   if (request.action == 'BIS') {
     const data = await getData();
@@ -24,7 +24,7 @@ chrome.runtime.onMessage.addListener(async function (
         });
 
         return true;
-      }
+      },
     );
   }
 });
@@ -47,13 +47,45 @@ async function getData() {
       day: '2-digit',
     }).format(new Date()),
     updatedAt: document.querySelector('.date-tip')?.innerText,
-    overall,
-    bisItemRaid,
-    bisItemMythic,
-    trinkets: getTrinketsRank(),
+    // overall,
+    // bisItemRaid,
+    // bisItemMythic,
+    // trinkets: getTrinketsRank(),
     advice: getChipAdivce(),
+    chipAdvice: getComplexChipAdvice(),
   };
   return data;
+}
+
+function collectIdByHref(href) {
+  return Number(href.split('item=')[1].split('/')[0]);
+}
+
+function getComplexChipAdvice(olEle) {
+  const options = Array.from(olEle.children).map((liEle, index) => {
+    const itemEle = liEle.querySelector('a[href]');
+    let rarity = '';
+    if (liEle.innerText.toLowerCase().includes('myth')) {
+      rarity = 'mythic';
+    } else if (liEle.innerText.toLowerCase().includes('hero')) {
+      rarity = 'heroic';
+    }
+    return {
+      index,
+      id: getItemIdByURL(itemEle?.href ?? ''),
+      name: itemEle?.innerText?.trim(),
+      rarity,
+      info: '',
+    };
+  });
+  return {
+    'type': 'all',
+    'info': '',
+    data: {
+      'filters': [],
+      options: options,
+    },
+  };
 }
 
 function getChipAdivce() {
@@ -62,6 +94,14 @@ function getChipAdivce() {
   while (olEle.tagName !== 'OL') {
     olEle = olEle.nextSibling;
   }
+
+  let filterContainer = container.nextSibling;
+  while (filterContainer.querySelector('.markup-grid.exclude-units')) {
+    filterContainer = filterContainer.nextSibling;
+  }
+  const optionButtons = filterContainer.querySelector(
+    '.markup-grid.exclude-units').querySelectorAll('button');
+
   return Array.from(olEle.childNodes)
     .map((liEle) => {
       const href = liEle.querySelector('a[data-type=item]')?.href ?? '';
@@ -70,7 +110,7 @@ function getChipAdivce() {
           .split('/')
           .find((item) => item.includes('item='))
           ?.split('=')
-          .pop()
+          .pop(),
       );
     })
     .filter((item) => item);
@@ -121,7 +161,9 @@ function getSlotLabel(key) {
 
   return key;
 }
+
 const dungeonNameCache = {};
+
 async function getSourceLabel(input) {
   let source = input
     .replace(/[\|\/\(\)]/g, '')
@@ -131,8 +173,8 @@ async function getSourceLabel(input) {
     return { source: '/', isLoot: false };
   }
   if (
-    ['crafting', 'leatherworking', 'blacksmithing', 'crafted'].includes(
-      source.toLowerCase()
+    [ 'crafting', 'leatherworking', 'blacksmithing', 'crafted' ].includes(
+      source.toLowerCase(),
     )
   ) {
     return { source: '制造装备', isLoot: false };
@@ -165,6 +207,7 @@ async function getSourceLabel(input) {
 
   return { source, isLoot: true };
 }
+
 function getItemIdByURL(url) {
   const id = url
     .split('/')
@@ -185,6 +228,7 @@ const translateLimiter = new Bottleneck({
 
   maxConcurrent: 100,
 });
+
 async function getBisItem(containerId) {
   let itemDoms;
   if (containerId === '#overall-bis') {
@@ -247,6 +291,7 @@ async function getBisItem(containerId) {
       fullImageURL,
     };
   }
+
   const promises = domArray.map((dom) => mapItemInfo(dom));
 
   const results = await Promise.allSettled(promises);
@@ -295,6 +340,7 @@ function getImageFileName(url) {
   }
   return '';
 }
+
 function getTrinketsRank() {
   const lists = document.querySelectorAll('.tier-list-rows .tier-list-tier');
   if (lists?.length) {
@@ -315,6 +361,7 @@ function getTrinketsRank() {
   }
   return [];
 }
+
 //#endregion
 
 //#region auto jump
@@ -327,7 +374,7 @@ function checkAutoCollect() {
         { action: 'save', currentTab, data },
         (res) => {
           jumpCountDown(config.jumpInterval);
-        }
+        },
       );
       return true;
     }
@@ -337,6 +384,7 @@ function checkAutoCollect() {
 let restTime;
 let intervalTimer;
 const UPDATE_PER_TIME = 100;
+
 function jumpCountDown(time) {
   restTime = time;
   setTimeout(() => {
@@ -352,7 +400,7 @@ function jumpCountDown(time) {
       },
       (res) => {
         console.log(res);
-      }
+      },
     );
   }, time);
   intervalTimer = setInterval(() => {
@@ -374,6 +422,7 @@ let currentProgressElement;
 
 let totalSpecCount;
 let collectedSpecCount;
+
 function updateCountDownBox(params) {
   const { leftTime, total, current } = params;
   if (countDownBox && leftTime <= 0) {
@@ -406,7 +455,7 @@ function updateCountDownBox(params) {
   totalTextElement.innerText = total;
   currentProgressElement.innerText = current;
   currentProgressElement.style.width = `${((current / total) * 100).toFixed(
-    2
+    2,
   )}%`;
 }
 
@@ -422,4 +471,5 @@ function updateSpec() {
     console.log('Received from background:', { total, collected });
   });
 }
+
 //#endregion

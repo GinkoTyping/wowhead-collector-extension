@@ -4,9 +4,10 @@ chrome.runtime.onMessage.addListener(async function (
   sendResponse
 ) {
   if (request.action == 'querySpells') {
-    const data = await G_API.queryBlankSpell();
+    const data = await G_API.queryBlankSpell(request.version);
     chrome.runtime.sendMessage({
       action: 'saveSpellToSearch',
+      version: request.version,
       data,
     });
     return true;
@@ -24,6 +25,9 @@ async function tryCollectData() {
         let error = null;
         try {
           spellData = getSpellData();
+          if (location.href.includes('wotlk')) {
+            spellData.version = 'wotlk'
+          }
           response = await G_API.queryUpdateSpell(spellData);
         } catch (e) {
           error = e;
