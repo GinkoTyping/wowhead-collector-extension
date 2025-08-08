@@ -256,6 +256,8 @@ function updatePopupView() {
       insertGetStatButton();
     } else if (tabs[0].url.includes('www.wowhead.com/cn/item')) {
       insertGetItemButton();
+    } else if (tabs[0].url.includes('www.wowhead.com/wotlk/cn/guide')) {
+      insertWotlkTalentButton();
     }
   });
 }
@@ -402,4 +404,24 @@ function insertGetItemButton() {
   };
 }
 //#endregion
+
+// region 怀旧服天赋树
+let getWotlkTalentButton;
+function insertWotlkTalentButton() {
+  getWotlkTalentButton = document.createElement('button');
+  getWotlkTalentButton.id = 'collect-wotlk-talent';
+  getWotlkTalentButton.innerText = '获取天赋';
+  document.querySelector('.content').append(getWotlkTalentButton);
+  getWotlkTalentButton.onclick = function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.runtime.sendMessage({
+        action: 'updateWindowId',
+        windowId: tabs[0].windowId,
+      });
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'get-wotlk-talent' }, (data) => {});
+    });
+  };
+}
+// endregion
+
 updatePopupView();

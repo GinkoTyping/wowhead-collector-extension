@@ -53,6 +53,12 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       const nextURL = getNextURL();
       handleJump(request, nextURL);
       break;
+    case 'toNextTalent': {
+      saveTalentData(request.data)
+      const url = getNextTalentURL()
+      handleToNextTalent(request, _sender, sendResponse, url);
+      break;
+    }
     case 'export':
       handlExport(request, _sender, sendResponse);
       break;
@@ -188,19 +194,20 @@ function handleSave(request, _sender, sendResponse) {
   return sendResponse('Save succeeded.');
 }
 
-//#region Jump
+// region Jump
+let currentActiveTabId = null;
 function handleJump(request, nextUrl) {
   const { currentTab } = request;
   if (nextUrl) {
-    chrome.tabs.create({ url: nextUrl, windowId });
-
-    chrome.tabs.query({ windowId }, (tabs) => {
-      const lastTab = tabs.find((tab) =>
-        [tab.url, tab.pendingUrl].includes(currentTab.url)
-      );
-      if (lastTab) {
-        chrome.tabs.remove(lastTab.id);
+    // 创建新标签页时获取新标签ID
+    chrome.tabs.create({ url: nextUrl, windowId }, (newTab) => {
+      // 直接使用当前标签的ID关闭
+      if (currentTab && currentTab.id) {
+        chrome.tabs.remove(currentTab.id);
       }
+
+      // 更新全局记录的当前标签页（用于下次关闭）
+      currentActiveTabId = newTab.id;
     });
   }
 }
@@ -220,10 +227,100 @@ function getNextURL() {
 
   return nextURL;
 }
-//#region
+// endregion
+
+// region 跳转天赋页面
+let talentURLs = {
+
+  'death-knight': ['blood|tank', 'frost', 'unholy'],
+  druid: ['balance', 'feral', 'feral|tank', 'restoration|healer'],
+  mage: ['arcane', 'fire', 'frost'],
+  paladin: ['holy|healer', 'protection|tank', 'retribution'],
+  rogue: ['assassination', 'combat', 'subtlety'],
+  shaman: ['elemental', 'enhancement', 'restoration|healer'],
+  warlock: ['affliction', 'demonology', 'destruction'],
+  warrior: ['arms', 'fury', 'protection|tank'],
+  hunter: ['beast-mastery', 'marksmanship', 'survival'],
+  priest: ['discipline|healer', 'holy|healer', 'shadow'],
+}
+let currentTalentURLIndex = 0;
+let currentTalent = {
+  roleClass: 'death-knight',
+  classSpec: 'blood',
+  type: 'tank'
+}
+function getNextTalentURL() {
+  if (currentTalent.roleClass) {
+    if (currentTalentURLIndex === 0) {
+      // 是否是已经完成
+      if (Object.keys(talentURLs)?.length) {
+        Object.entries(talentURLs).some(([key, value]) => {
+          const spec = value.shift()
+          currentTalent = {
+            roleClass: key,
+            classSpec: spec.split('|')[0],
+            type: spec.split('|')[1] ?? 'dps',
+          }
+          return true;
+        })
+        if (!talentURLs[currentTalent.roleClass]?.length) {
+          delete talentURLs[currentTalent.roleClass];
+        }
+        currentTalentURLIndex ++;
+        return `https://www.wowhead.com/wotlk/cn/guide/classes/${currentTalent.roleClass}/${currentTalent.classSpec}/${currentTalent.type}-talent-builds-glyphs-pve`
+      } else {
+        return ''
+      }
+    } else {
+      currentTalentURLIndex = 0;
+      return `https://www.wowhead.com/wotlk/cn/guide/classes/${currentTalent.roleClass}/${currentTalent.classSpec}/${currentTalent.type}-leveling-tips`
+    }
+  } else {
+    currentTalent = {
+      roleClass: 'death-knight',
+      classSpec: 'blood',
+      type: 'tank'
+    }
+    talentURLs['death-knight'].shift()
+    currentTalentURLIndex = 1;
+    return `https://www.wowhead.com/wotlk/cn/guide/classes/${currentTalent.roleClass}/${currentTalent.classSpec}/${currentTalent.type}-talent-builds-glyphs-pve`
+  }
+}
+function handleToNextTalent(request, _sender, sendResponse, url) {
+  if (url) {
+    handleJump({ currentTab: _sender.tab }, url);
+  }
+}
+const talentData = []
+function saveTalentData(data) {
+  let existed = talentData.find(item => item.classSpec === currentTalent.classSpec && item.roleClass === currentTalent.roleClass && currentTalent.type === item.type);
+  let output = {}
+
+  if (data.type === 'build') {
+    output.build = data.data;
+  } else {
+    output.leveling = data.data;
+  }
+
+  if (existed) {
+    existed[data.type] = data.data;
+  } else {
+    talentData.push({
+      ...currentTalent,
+      ...output
+    })
+  }
+
+  console.log(currentTalent.roleClass, currentTalent.classSpec, data.type);
+}
+// endregion
 
 function handlExport(request, _sender, sendResponse) {
-  return sendResponse(collectedData);
+  if (talentData.length > 0) {
+    return sendResponse(talentData);
+  } else {
+    return sendResponse(collectedData);
+  }
 }
 
 function handleQuerySpecs(request, _sender, sendResponse) {
@@ -300,6 +397,28 @@ function toNextNpc(tab) {
 
 const npcInDungeon = [
   {
+    name: 'Priory of the Sacred Flame',
+    id: '14954',
+  },
+  {
+    name: 'Operation: Mechagon',
+    id: '10225',
+  },
+
+  {
+    name: 'Halls of Atonement',
+    id: '12831',
+  },
+  {
+    name: 'Halls of Atonement',
+    id: '12831',
+  },
+
+  {
+    name: 'Cinderbrew Meadery',
+    id: '15103',
+  },
+  {
     name: 'The MOTHERLODE!!',
     id: '8064',
   },
@@ -312,25 +431,12 @@ const npcInDungeon = [
     id: '14938',
   },
   {
-    name: 'Priory of the Sacred Flame',
-    id: '14954',
-  },
-
-  {
-    name: 'Operation: Mechagon',
-    id: '10225',
-  },
-  {
     name: 'Operation: Floodgate',
     id: '15452',
   },
   {
     name: 'Darkflame Cleft',
     id: '14882',
-  },
-  {
-    name: 'Cinderbrew Meadery',
-    id: '15103',
   },
 ];
 let doneNpcInDunegon = [];

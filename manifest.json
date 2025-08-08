@@ -74,6 +74,19 @@
     },
     {
       "js": [
+        "scripts/content/api.js",
+        "scripts/auth/index.js",
+        "scripts/content/wowhead-wotlk-talent.js"
+      ],
+      "css": [
+        "css/content.css"
+      ],
+      "matches": [
+        "https://www.wowhead.com/wotlk/cn/guide*"
+      ]
+    },
+    {
+      "js": [
         "scripts/auth/index.js",
         "scripts/content/api.js",
         "scripts/content/wowhead-npc.js"
