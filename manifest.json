@@ -30,7 +30,8 @@
         "css/content.css"
       ],
       "matches": [
-        "https://www.wowhead.com/cn/guide/*/bis-gear"
+        "https://www.wowhead.com/cn/guide/*/bis-gear",
+        "https://www.wowhead.com/guide/*/bis-gear"
       ]
     },
     {
