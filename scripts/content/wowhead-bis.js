@@ -47,12 +47,12 @@ async function getData() {
       day: '2-digit',
     }).format(new Date()),
     updatedAt: document.querySelector('.date-tip')?.innerText,
-    // overall,
-    // bisItemRaid,
-    // bisItemMythic,
-    // trinkets: getTrinketsRank(),
-    advice: getChipAdivce(),
-    chipAdvice: getComplexChipAdvice(),
+    overall,
+    bisItemRaid,
+    bisItemMythic,
+    trinkets: getTrinketsRank(),
+    // advice: getChipAdvice(),
+    // chipAdvice: getComplexChipAdvice(),
   };
   return data;
 }
@@ -88,7 +88,7 @@ function getComplexChipAdvice(olEle) {
   };
 }
 
-function getChipAdivce() {
+function getChipAdvice() {
   const container = document.querySelector('#puzzling-cartel-chips');
   let olEle = container.nextSibling;
   while (olEle.tagName !== 'OL') {

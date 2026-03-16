@@ -54,10 +54,17 @@ async function queryDungeonByName(nameEN) {
         'Content-Type': 'application/JSON',
       },
       body: JSON.stringify({ nameEN }),
-    });
+    })
     if (res) {
-      const data = await res.json();
-      return data.name_zh;
+
+      try {
+        const data = await res.json();
+        return data.name_zh;
+      } catch(e) {
+        console.warn(`${nameEN}获取中文名称失败`);
+        return nameEN
+      }
+
     } else if (nameEN === 'Operation: Floodgate') {
       return '水闸行动';
     } else {

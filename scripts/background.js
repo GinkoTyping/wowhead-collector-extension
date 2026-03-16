@@ -138,8 +138,11 @@ function handleUpdateWindowId(request, _sender, sendResponse) {
 }
 
 function getSpecInfo(url) {
+  // 个别页面还没有中文
+  let base = url.includes('/cn/') ? 'https://www.wowhead.com/cn/guide/classes/' : 'https://www.wowhead.com/guide/classes/'
+
   const output = url
-    .replace('https://www.wowhead.com/cn/guide/classes/', '')
+    .replace(base, '')
     .replace(/([^/]+)$/, '')
     .split('/');
   if (output) {
@@ -396,47 +399,33 @@ function toNextNpc(tab) {
 }
 
 const npcInDungeon = [
+  // {
+  //   name: 'Priory of the Sacred Flame',
+  //   id: '14954',
+  // },
+  // {
+  //   name: 'Operation: Floodgate',
+  //   id: '15452',
+  // },
+  // {
+  //   name: 'Tazavesh, the Veiled Market',
+  //   id: '13577',
+  // },
+  // {
+  //   name: 'Eco-Dome Al\'dani',
+  //   id: '16104',
+  // },
+  // {
+  //   name: 'Halls of Atonement',
+  //   id: '12831',
+  // },
+  // {
+  //   name: 'Ara-Kara, City of Echoes',
+  //   id: '15093',
+  // },
   {
-    name: 'Priory of the Sacred Flame',
-    id: '14954',
-  },
-  {
-    name: 'Operation: Mechagon',
-    id: '10225',
-  },
-
-  {
-    name: 'Halls of Atonement',
-    id: '12831',
-  },
-  {
-    name: 'Halls of Atonement',
-    id: '12831',
-  },
-
-  {
-    name: 'Cinderbrew Meadery',
-    id: '15103',
-  },
-  {
-    name: 'The MOTHERLODE!!',
-    id: '8064',
-  },
-  {
-    name: 'Theater of Pain',
-    id: '12841',
-  },
-  {
-    name: 'The Rookery',
-    id: '14938',
-  },
-  {
-    name: 'Operation: Floodgate',
-    id: '15452',
-  },
-  {
-    name: 'Darkflame Cleft',
-    id: '14882',
+    name: 'The Dawnbreaker',
+    id: '14971',
   },
 ];
 let doneNpcInDunegon = [];

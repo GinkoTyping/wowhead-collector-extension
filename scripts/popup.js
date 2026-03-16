@@ -38,7 +38,8 @@ collectDataBtn.onclick = function () {
 };
 function checkValidURL(url) {
   const regex = /^https:\/\/www\.wowhead\.com\/cn\/guide\/classes.*\/bis-gear$/;
-  return regex.test(url);
+  const regexAlter = /^https:\/\/www\.wowhead\.com\/guide\/classes.*\/bis-gear$/;
+  return regex.test(url) || regexAlter.test(url);
 }
 
 const exportDataBtn = document.querySelector('#export');
@@ -232,7 +233,7 @@ function updatePopupView() {
     if (tabs[0].url.includes('www.wowhead.com/cn/spell') || tabs[0].url.includes('www.wowhead.com/wotlk/cn/spell')) {
       insertSpellDom();
     } else if (
-      tabs[0].url.includes('www.wowhead.com/cn/guide') &&
+      (tabs[0].url.includes('www.wowhead.com/cn/guide') || tabs[0].url.includes('www.wowhead.com/guide')) &&
       tabs[0].url.includes('bis-gear')
     ) {
       chrome.runtime.sendMessage({ action: 'querySpecs' }, (specs) => {
