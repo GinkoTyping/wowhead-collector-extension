@@ -22,6 +22,25 @@
     },
     {
       "js": [
+        "scripts/content/archon-inject.js"
+      ],
+      "matches": [
+        "https://www.archon.gg/*"
+      ],
+      "world": "MAIN"
+    },
+    {
+      "js": [
+        "scripts/auth/index.js",
+        "scripts/content/api.js",
+        "scripts/content/archon.js"
+      ],
+      "matches": [
+        "https://www.archon.gg/*"
+      ]
+    },
+    {
+      "js": [
         "assets/light.min.js",
         "scripts/content/wowhead-bis.js",
         "scripts/content/api.js"

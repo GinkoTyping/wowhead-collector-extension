@@ -259,6 +259,8 @@ function updatePopupView() {
       insertGetItemButton();
     } else if (tabs[0].url.includes('www.wowhead.com/wotlk/cn/guide')) {
       insertWotlkTalentButton();
+    } else if (tabs[0].url.includes('www.archon.gg')) {
+      insertArchonButton()
     }
   });
 }
@@ -420,6 +422,25 @@ function insertWotlkTalentButton() {
         windowId: tabs[0].windowId,
       });
       chrome.tabs.sendMessage(tabs[0].id, { action: 'get-wotlk-talent' }, (data) => {});
+    });
+  };
+}
+// endregion
+
+// region archon
+let getArchonButton;
+function insertArchonButton() {
+  getArchonButton = document.createElement('button');
+  getArchonButton.id = 'collect-archon';
+  getArchonButton.innerText = '获取ARCHON数据';
+  document.querySelector('.content').append(getArchonButton);
+  getArchonButton.onclick = function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.runtime.sendMessage({
+        action: 'updateWindowId',
+        windowId: tabs[0].windowId,
+      });
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'get-archon' }, (data) => {});
     });
   };
 }

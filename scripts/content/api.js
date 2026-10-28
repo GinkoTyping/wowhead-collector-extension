@@ -7,6 +7,9 @@ const G_API = {
   queryAddOrUpdateNpc,
   queryBlankSourceItem,
   queryUpdateItem,
+  queryFlatSpecList,
+  queryUpdateArchon,
+  queryUpdateArchonTierList,
 };
 async function translateByBaidu(text) {
   try {
@@ -135,4 +138,53 @@ async function queryUpdateItem(itemData) {
     },
     body: JSON.stringify(itemData),
   });
+}
+
+async function queryFlatSpecList(){
+  const response = await fetch('http://localhost:3000/api/wow/bis/flat-spec-list', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${GINKO_AUTH_TOKEN}`,
+    }
+  });
+  const res = await response.json()
+  return res.data
+}
+
+async function queryUpdateArchonTierList(data){
+  const response = await fetch('http://localhost:3000/api/wow/tier-list/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${GINKO_AUTH_TOKEN}`
+    },
+    body: JSON.stringify(data)
+  });
+  return response.json()
+}
+
+async function queryUpdateArchon(data){
+  const jsonStr = JSON.stringify({
+    existData: data
+  })
+  const stream = new Blob([jsonStr]).stream();
+  const compressedStream = stream.pipeThrough(new CompressionStream('gzip'));
+  const compressedBlob = await new Response(compressedStream).blob();
+  const compressedSize = compressedBlob.size;
+  console.log(`🗜️ 压缩后大小: ${(compressedSize / 1024).toFixed(2)} KB`);
+
+  // 转 ArrayBuffer 发送
+  const arrayBuffer = await compressedBlob.arrayBuffer();
+
+  const response = await fetch('http://localhost:3000/api/wow/bis/archon-overview', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/octet-stream',
+      Authorization: `Bearer ${GINKO_AUTH_TOKEN}`,
+    },
+    body: arrayBuffer
+  });
+
+  return response.json()
 }
