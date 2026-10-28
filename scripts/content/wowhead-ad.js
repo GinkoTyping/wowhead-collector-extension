@@ -1,8 +1,8 @@
 const adList = [
-  '.main .blocks',
-  '.pbs__player',
-  '#page-content .sidebar-wrapper',
-  '#video-pos-body',
+  // '.main .blocks',
+  // '.pbs__player',
+  // '#page-content .sidebar-wrapper',
+  // '#video-pos-body',
   'pb-stream'
 ];
 

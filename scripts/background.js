@@ -22,7 +22,7 @@ let windowId;
 
 const URLS = {
   'death-knight': ['blood', 'frost', 'unholy'],
-  'demon-hunter': ['havoc', 'vengeance'],
+  'demon-hunter': ['havoc', 'vengeance', 'devourer'],
   druid: ['balance', 'feral', 'guardian', 'restoration'],
   mage: ['arcane', 'fire', 'frost'],
   monk: ['brewmaster', 'mistweaver', 'windwalker'],
